@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#c9a96e">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Êxitos FRJ">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="description" content="Controle de Êxitos — Núcleo de Falência e Recuperação Judicial">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<title>Êxitos FRJ</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0f14;
+    --surface: #13161d;
+    --surface2: #1a1e28;
+    --border: #252a38;
+    --gold: #c9a96e;
+    --gold-light: #e8c98a;
+    --gold-dim: rgba(201,169,110,0.12);
+    --green: #3ecf8e;
+    --green-dim: rgba(62,207,142,0.1);
+    --red: #f26969;
+    --red-dim: rgba(242,105,105,0.1);
+    --blue: #5b9cf6;
+    --blue-dim: rgba(91,156,246,0.1);
+    --text: #e8eaf0;
+    --text-muted: #6b7280;
+    --text-dim: #9ca3af;
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html { height: 100%; }
+  body {
+    font-family: 'IBM Plex Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100%;
+    padding-bottom: calc(56px + var(--safe-bottom));
+    overscroll-behavior: none;
+  }
+
+  /* ── INSTALL BANNER ── */
+  #installBanner {
+    display: none;
+    position: fixed;
+    bottom: calc(56px + var(--safe-bottom));
+    left: 0; right: 0;
+    background: linear-gradient(135deg, #1a1e28, #13161d);
+    border-top: 1px solid var(--gold);
+    padding: 0.9rem 1rem;
+    z-index: 500;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.75rem;
+    animation: slideUp 0.3s ease;
+  }
+  #installBanner.visible { display: flex; }
+  @keyframes slideUp {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+  }
+  .install-icon { font-size: 1.5rem; flex-shrink: 0; }
+  .install-text { flex: 1; }
+  .install-text strong { display: block; font-size: 0.85rem; color: var(--gold-light); }
+  .install-text span { font-size: 0.72rem; color: var(--text-muted); }
+  .install-actions { display: flex; gap: 0.4rem; flex-shrink: 0; }
+
+  /* ── HEADER ── */
+  header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 1rem;
+    padding-top: var(--safe-top);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .header-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 56px;
+    gap: 0.5rem;
+  }
+  .logo { display: flex; align-items: center; gap: 0.6rem; }
+  .logo-icon {
+    width: 32px; height: 32px;
+    background: linear-gradient(135deg, var(--gold), var(--gold-light));
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; flex-shrink: 0;
+  }
+  .logo-text h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 0.9rem;
+    color: var(--gold-light);
+    line-height: 1.1;
+  }
+  .logo-text span {
+    font-size: 0.58rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+  .header-right { display: flex; gap: 0.35rem; align-items: center; }
+
+  /* ── BOTTOM NAV ── */
+  nav {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    display: flex;
+    padding-bottom: var(--safe-bottom);
+    z-index: 100;
+  }
+  .nav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 0.55rem 0.25rem;
+    cursor: pointer;
+    border: none;
+    background: none;
+    color: var(--text-muted);
+    font-size: 0.6rem;
+    font-family: 'IBM Plex Sans', sans-serif;
+    gap: 0.2rem;
+    transition: color 0.15s;
+  }
+  .nav-item .nav-icon { font-size: 1.2rem; line-height: 1; }
+  .nav-item.active { color: var(--gold); }
+  .nav-item.active .nav-icon { filter: drop-shadow(0 0 4px rgba(201,169,110,0.5)); }
+
+  /* ── PAGES ── */
+  .page { display: none; padding: 1rem; }
+  .page.active { display: block; }
+
+  /* ── FAB (Floating Action Button) ── */
+  .fab {
+    position: fixed;
+    bottom: calc(70px + var(--safe-bottom));
+    right: 1rem;
+    width: 52px; height: 52px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--gold), var(--gold-light));
+    color: #0d0f14;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    box-shadow: 0 4px 20px rgba(201,169,110,0.4);
+    display: flex; align-items: center; justify-content: center;
+    transition: transform 0.2s, box-shadow 0.2s;
+    z-index: 90;
+  }
+  .fab:active { transform: scale(0.93); }
+
+  /* ── STATS ── */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.6rem;
+    margin-bottom: 1rem;
+  }
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.85rem 1rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+  }
+  .stat-card.gold::before { background: linear-gradient(90deg, var(--gold), transparent); }
+  .stat-card.green::before { background: linear-gradient(90deg, var(--green), transparent); }
+  .stat-card.blue::before { background: linear-gradient(90deg, var(--blue), transparent); }
+  .stat-card.red::before { background: linear-gradient(90deg, var(--red), transparent); }
+  .stat-label { font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); font-family: 'IBM Plex Mono', monospace; margin-bottom: 0.3rem; }
+  .stat-value { font-family: 'Playfair Display', serif; font-size: 1.4rem; font-weight: 700; line-height: 1; }
+  .stat-card.gold .stat-value { color: var(--gold-light); }
+  .stat-card.green .stat-value { color: var(--green); }
+  .stat-card.blue .stat-value { color: var(--blue); }
+  .stat-card.red .stat-value { color: var(--red); }
+  .stat-sub { font-size: 0.62rem; color: var(--text-muted); margin-top: 0.25rem; }
+
+  /* ── SEARCH ── */
+  .search-wrap { margin-bottom: 0.75rem; }
+  .search-box {
+    display: flex; align-items: center;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0 0.75rem;
+    gap: 0.5rem;
+    transition: border-color 0.2s;
+  }
+  .search-box:focus-within { border-color: var(--gold); }
+  .search-box input {
+    flex: 1; background: none; border: none; outline: none;
+    color: var(--text); font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 0.9rem; padding: 0.7rem 0;
+  }
+  .search-box input::placeholder { color: var(--text-muted); }
+
+  /* ── FILTER ROW ── */
+  .filter-row { display: flex; gap: 0.5rem; margin-bottom: 0.75rem; overflow-x: auto; padding-bottom: 2px; }
+  .filter-row::-webkit-scrollbar { display: none; }
+  .filter-chip {
+    flex-shrink: 0;
+    padding: 0.35rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text-muted);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.15s;
+  }
+  .filter-chip.active { border-color: var(--gold); color: var(--gold); background: var(--gold-dim); }
+
+  /* ── CARDS (mobile list) ── */
+  .records-list { display: flex; flex-direction: column; gap: 0.6rem; }
+  .record-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.9rem 1rem;
+    cursor: pointer;
+    transition: border-color 0.15s;
+    position: relative;
+  }
+  .record-card:active { border-color: var(--gold); }
+  .record-card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+  .record-processo { font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; color: var(--blue); }
+  .record-date { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--text-muted); flex-shrink: 0; }
+  .record-procurador { font-size: 0.85rem; font-weight: 500; color: var(--text); margin-bottom: 0.4rem; }
+  .record-bottom { display: flex; align-items: center; justify-content: space-between; }
+  .record-valor { font-family: 'IBM Plex Mono', monospace; font-size: 0.82rem; color: var(--gold-light); font-weight: 500; }
+  .record-obs { font-size: 0.7rem; color: var(--text-muted); margin-top: 0.3rem; }
+  .record-actions { display: flex; gap: 0.25rem; flex-shrink: 0; }
+
+  /* ── BADGES ── */
+  .badge {
+    display: inline-block; padding: 0.18rem 0.55rem;
+    border-radius: 20px; font-size: 0.65rem; font-weight: 600;
+    letter-spacing: 0.03em; white-space: nowrap;
+  }
+  .badge-green { background: var(--green-dim); color: var(--green); border: 1px solid rgba(62,207,142,0.2); }
+  .badge-gold { background: var(--gold-dim); color: var(--gold-light); border: 1px solid rgba(201,169,110,0.2); }
+  .badge-blue { background: var(--blue-dim); color: var(--blue); border: 1px solid rgba(91,156,246,0.2); }
+  .badge-red { background: var(--red-dim); color: var(--red); border: 1px solid rgba(242,105,105,0.2); }
+
+  /* ── BUTTONS ── */
+  .btn {
+    display: inline-flex; align-items: center; gap: 0.35rem;
+    padding: 0.45rem 0.85rem; border-radius: 8px;
+    font-size: 0.78rem; font-family: 'IBM Plex Sans', sans-serif;
+    font-weight: 500; cursor: pointer; border: none;
+    transition: all 0.15s; white-space: nowrap;
+  }
+  .btn:active { transform: scale(0.96); }
+  .btn-ghost { background: transparent; color: var(--text-dim); border: 1px solid var(--border); }
+  .btn-gold { background: linear-gradient(135deg, var(--gold), var(--gold-light)); color: #0d0f14; font-weight: 600; }
+  .btn-green { background: var(--green-dim); color: var(--green); border: 1px solid rgba(62,207,142,0.25); }
+  .btn-whatsapp { background: rgba(37,211,102,0.12); color: #25d366; border: 1px solid rgba(37,211,102,0.25); }
+  .btn-sm { padding: 0.3rem 0.6rem; font-size: 0.72rem; }
+  .icon-btn {
+    background: none; border: none; color: var(--text-muted);
+    cursor: pointer; padding: 0.35rem; border-radius: 6px;
+    font-size: 14px; transition: all 0.15s; line-height: 1;
+  }
+  .icon-btn:active { transform: scale(0.9); }
+
+  /* ── MODAL ── */
+  .overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.75);
+    backdrop-filter: blur(4px);
+    z-index: 200;
+    align-items: flex-end;
+    justify-content: center;
+    padding: 0;
+  }
+  .overlay.open { display: flex; }
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 18px 18px 0 0;
+    padding: 1.25rem 1.25rem calc(1.25rem + var(--safe-bottom));
+    width: 100%;
+    max-height: 92vh;
+    overflow-y: auto;
+    animation: sheetUp 0.28s cubic-bezier(0.32,0.72,0,1);
+  }
+  @keyframes sheetUp {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+  }
+  .modal-handle {
+    width: 36px; height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    margin: 0 auto 1rem;
+  }
+  .modal-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.2rem;
+    color: var(--gold-light);
+    margin-bottom: 1.25rem;
+  }
+  .form-group { display: flex; flex-direction: column; gap: 0.3rem; margin-bottom: 0.85rem; }
+  .form-label { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); font-family: 'IBM Plex Mono', monospace; }
+  .form-input, .form-select {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 1rem;
+    padding: 0.7rem 0.85rem;
+    outline: none;
+    transition: border-color 0.2s;
+    width: 100%;
+    -webkit-appearance: none;
+  }
+  .form-input:focus, .form-select:focus { border-color: var(--gold); }
+  .form-input::placeholder { color: var(--text-muted); }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; }
+  .modal-footer { display: flex; gap: 0.5rem; margin-top: 1.25rem; }
+  .modal-footer .btn { flex: 1; justify-content: center; padding: 0.75rem; font-size: 0.9rem; }
+
+  /* ── SHARE PAGE ── */
+  .share-section { margin-bottom: 1.25rem; }
+  .share-section-title { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); font-family: 'IBM Plex Mono', monospace; margin-bottom: 0.6rem; }
+  .share-btn-full {
+    width: 100%; display: flex; align-items: center; gap: 0.75rem;
+    padding: 0.9rem 1rem; border-radius: 10px;
+    font-size: 0.88rem; font-family: 'IBM Plex Sans', sans-serif;
+    font-weight: 500; cursor: pointer; border: none;
+    transition: all 0.15s; margin-bottom: 0.5rem;
+  }
+  .share-btn-full:active { transform: scale(0.97); }
+  .share-btn-full .icon { font-size: 1.3rem; }
+  .share-btn-full .info strong { display: block; }
+  .share-btn-full .info small { font-size: 0.72rem; opacity: 0.7; }
+  .sbf-whatsapp { background: rgba(37,211,102,0.12); color: #25d366; border: 1px solid rgba(37,211,102,0.25); }
+  .sbf-email { background: var(--blue-dim); color: var(--blue); border: 1px solid rgba(91,156,246,0.25); }
+  .sbf-download { background: var(--gold-dim); color: var(--gold-light); border: 1px solid rgba(201,169,110,0.25); }
+  .sbf-csv { background: var(--green-dim); color: var(--green); border: 1px solid rgba(62,207,142,0.25); }
+
+  /* ── INSTALL PAGE ── */
+  .install-steps { display: flex; flex-direction: column; gap: 0.75rem; }
+  .install-step {
+    display: flex; align-items: flex-start; gap: 0.75rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.85rem 1rem;
+  }
+  .step-num {
+    width: 24px; height: 24px; border-radius: 50%;
+    background: var(--gold-dim); color: var(--gold-light);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.75rem; font-weight: 700; font-family: 'IBM Plex Mono', monospace;
+    flex-shrink: 0; margin-top: 1px;
+  }
+  .step-content strong { display: block; font-size: 0.85rem; color: var(--text); margin-bottom: 0.2rem; }
+  .step-content p { font-size: 0.78rem; color: var(--text-muted); line-height: 1.4; }
+  .step-icon { font-size: 1rem; }
+
+  /* ── EMPTY ── */
+  .empty-state { text-align: center; padding: 3rem 1rem; color: var(--text-muted); }
+  .empty-state .icon { font-size: 2.5rem; margin-bottom: 0.75rem; }
+  .empty-state p { font-size: 0.85rem; margin-bottom: 1rem; }
+
+  /* ── PAGE TITLE ── */
+  .page-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.1rem; color: var(--gold-light);
+    margin-bottom: 1rem;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+
+  /* ── OFFLINE TOAST ── */
+  .toast {
+    position: fixed; bottom: calc(70px + var(--safe-bottom)); left: 0.75rem; right: 0.75rem;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 10px; padding: 0.75rem 1rem;
+    font-size: 0.82rem; color: var(--text);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    display: none; gap: 0.5rem; align-items: center;
+    z-index: 999; animation: toastIn 0.2s ease;
+  }
+  .toast.show { display: flex; }
+  @keyframes toastIn {
+    from { transform: translateY(8px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+
+  /* ── OFFLINE BADGE ── */
+  .offline-badge {
+    display: none;
+    background: var(--red-dim); color: var(--red);
+    border: 1px solid rgba(242,105,105,0.3);
+    border-radius: 20px; padding: 0.15rem 0.5rem;
+    font-size: 0.65rem; font-family: 'IBM Plex Mono', monospace;
+  }
+  body.offline .offline-badge { display: inline-block; }
+
+  /* Swipe hint */
+  .swipe-hint { font-size: 0.68rem; color: var(--text-muted); text-align: center; padding: 0.5rem 0 0; }
+
+  @media (min-width: 600px) {
+    .stats-grid { grid-template-columns: repeat(4, 1fr); }
+    .page { max-width: 680px; margin: 0 auto; }
+  }
+</style>
+</head>
+<body>
+
+<!-- INSTALL BANNER -->
+<div id="installBanner">
+  <div class="install-icon">⚖️</div>
+  <div class="install-text">
+    <strong>Instalar como App</strong>
+    <span>Acesse sem navegador, funciona offline</span>
+  </div>
+  <div class="install-actions">
+    <button class="btn btn-ghost btn-sm" onclick="dismissInstall()">Não</button>
+    <button class="btn btn-gold btn-sm" onclick="installApp()">Instalar</button>
+  </div>
+</div>
+
+<!-- HEADER -->
+<header>
+  <div class="header-inner">
+    <div class="logo">
+      <div class="logo-icon">⚖️</div>
+      <div class="logo-text">
+        <h1>Controle de Êxitos</h1>
+        <span>Falência &amp; Recuperação Judicial</span>
+      </div>
+    </div>
+    <div class="header-right">
+      <span class="offline-badge">● offline</span>
+    </div>
+  </div>
+</header>
+
+<!-- PAGES -->
+
+<!-- HOME -->
+<div class="page active" id="page-home">
+  <div class="stats-grid">
+    <div class="stat-card gold">
+      <div class="stat-label">Êxitos</div>
+      <div class="stat-value" id="statTotal">0</div>
+      <div class="stat-sub">registros</div>
+    </div>
+    <div class="stat-card green">
+      <div class="stat-label">Valor Total</div>
+      <div class="stat-value" id="statValor">R$0</div>
+      <div class="stat-sub">envolvido</div>
+    </div>
+    <div class="stat-card blue">
+      <div class="stat-label">Processos</div>
+      <div class="stat-value" id="statProcessos">0</div>
+      <div class="stat-sub">únicos</div>
+    </div>
+    <div class="stat-card red">
+      <div class="stat-label">Procuradores</div>
+      <div class="stat-value" id="statProcuradores">0</div>
+      <div class="stat-sub">ativos</div>
+    </div>
+  </div>
+
+  <div class="search-wrap">
+    <div class="search-box">
+      <span>🔍</span>
+      <input type="search" id="searchInput" placeholder="Buscar processo, procurador..." oninput="render()" autocomplete="off">
+    </div>
+  </div>
+
+  <div class="filter-row" id="filterRow">
+    <button class="filter-chip active" data-filter="" onclick="setFilter(this)">Todos</button>
+    <button class="filter-chip" data-filter="Habilitação de Crédito" onclick="setFilter(this)">Habilitação</button>
+    <button class="filter-chip" data-filter="Impugnação Procedente" onclick="setFilter(this)">Impugnação</button>
+    <button class="filter-chip" data-filter="Recuperação de Ativos" onclick="setFilter(this)">Recuperação</button>
+    <button class="filter-chip" data-filter="Acordo Homologado" onclick="setFilter(this)">Acordo</button>
+    <button class="filter-chip" data-filter="Decretação de Falência" onclick="setFilter(this)">Falência</button>
+    <button class="filter-chip" data-filter="Plano Aprovado" onclick="setFilter(this)">Plano</button>
+    <button class="filter-chip" data-filter="Arrematação" onclick="setFilter(this)">Arrematação</button>
+  </div>
+
+  <div class="records-list" id="recordsList"></div>
+</div>
+
+<!-- REGISTROS (full list + sort) -->
+<div class="page" id="page-list">
+  <div class="page-title">
+    <span>📋 Todos os Registros</span>
+    <select class="btn btn-ghost" id="sortBy" onchange="render()" style="padding:0.35rem 0.6rem;font-size:0.75rem;cursor:pointer;background:var(--surface2);">
+      <option value="data_desc">Data ↓</option>
+      <option value="data_asc">Data ↑</option>
+      <option value="valor_desc">Valor ↓</option>
+      <option value="valor_asc">Valor ↑</option>
+      <option value="procurador">Procurador A-Z</option>
+    </select>
+  </div>
+  <div class="records-list" id="recordsListFull"></div>
+</div>
+
+<!-- COMPARTILHAR -->
+<div class="page" id="page-share">
+  <div class="page-title">🔗 Compartilhar</div>
+
+  <div class="share-section">
+    <div class="share-section-title">Enviar resumo</div>
+    <button class="share-btn-full sbf-whatsapp" onclick="shareWhatsApp()">
+      <span class="icon">💬</span>
+      <span class="info"><strong>WhatsApp</strong><small>Enviar resumo dos êxitos</small></span>
+    </button>
+    <button class="share-btn-full sbf-email" onclick="shareEmail()">
+      <span class="icon">📧</span>
+      <span class="info"><strong>E-mail</strong><small>Abrir cliente de e-mail</small></span>
+    </button>
+  </div>
+
+  <div class="share-section">
+    <div class="share-section-title">Exportar dados</div>
+    <button class="share-btn-full sbf-download" onclick="downloadWithData()">
+      <span class="icon">⬇</span>
+      <span class="info"><strong>Baixar App Completo</strong><small>HTML com todos os dados embutidos</small></span>
+    </button>
+    <button class="share-btn-full sbf-csv" onclick="exportCSV()">
+      <span class="icon">📊</span>
+      <span class="info"><strong>Exportar CSV</strong><small>Abrir no Excel ou Google Sheets</small></span>
+    </button>
+  </div>
+
+  <div class="share-section">
+    <div class="share-section-title">📱 Como instalar no celular</div>
+    <div class="install-steps">
+      <div class="install-step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <strong>Android (Chrome)</strong>
+          <p>Toque no menu ⋮ → "Adicionar à tela inicial" ou aguarde o banner de instalação aparecer</p>
+        </div>
+      </div>
+      <div class="install-step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <strong>iPhone (Safari)</strong>
+          <p>Toque em <strong>Compartilhar</strong> (ícone de seta) → "Adicionar à Tela de Início" → Adicionar</p>
+        </div>
+      </div>
+      <div class="install-step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <strong>Funciona offline!</strong>
+          <p>Após instalado, o app funciona sem internet. Os dados ficam salvos no dispositivo.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FAB -->
+<button class="fab" id="fab" onclick="openModal()" title="Novo Êxito">＋</button>
+
+<!-- BOTTOM NAV -->
+<nav>
+  <button class="nav-item active" id="nav-home" onclick="goPage('home')">
+    <span class="nav-icon">🏠</span>
+    <span>Início</span>
+  </button>
+  <button class="nav-item" id="nav-list" onclick="goPage('list')">
+    <span class="nav-icon">📋</span>
+    <span>Registros</span>
+  </button>
+  <button class="nav-item" id="nav-share" onclick="goPage('share')">
+    <span class="nav-icon">🔗</span>
+    <span>Compartilhar</span>
+  </button>
+</nav>
+
+<!-- MODAL FORM -->
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="modalTitle">➕ Novo Êxito</div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Data *</label>
+        <input class="form-input" type="date" id="fData">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Valor (R$)</label>
+        <input class="form-input" type="text" id="fValor" inputmode="decimal" placeholder="0,00" oninput="maskValor(this)">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Nº do Processo *</label>
+      <input class="form-input" type="text" id="fProcesso" placeholder="0000000-00.0000.0.00.0000" inputmode="numeric">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Procurador Responsável *</label>
+      <input class="form-input" type="text" id="fProcurador" placeholder="Nome completo" autocomplete="off">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Tipo de Êxito *</label>
+      <select class="form-select" id="fExito">
+        <option value="">Selecione...</option>
+        <option>Habilitação de Crédito</option>
+        <option>Impugnação Procedente</option>
+        <option>Recuperação de Ativos</option>
+        <option>Acordo Homologado</option>
+        <option>Decretação de Falência</option>
+        <option>Plano Aprovado</option>
+        <option>Arrematação</option>
+        <option>Outro</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Observações</label>
+      <input class="form-input" type="text" id="fObs" placeholder="Informações adicionais...">
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-gold" onclick="saveRecord()">💾 Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <span id="toastIcon">✅</span>
+  <span id="toastMsg">Salvo!</span>
+</div>
+
+<script>
+// ── DATA ──────────────────────────────────────────────────────────────────────
+const STORAGE_KEY = 'exitos_falencia_v1';
+let records = [];
+let editingId = null;
+let activeFilter = '';
+let deferredPrompt = null;
+
+function loadData() {
+  try { const r = localStorage.getItem(STORAGE_KEY); if (r) records = JSON.parse(r); } catch(e) { records = []; }
+}
+function saveData() { localStorage.setItem(STORAGE_KEY, JSON.stringify(records)); }
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
+
+// ── UTILS ────────────────────────────────────────────────────────────────────
+function formatDate(d) {
+  if (!d) return '—';
+  const [y,m,day] = d.split('-');
+  return `${day}/${m}/${y}`;
+}
+function formatValor(v) {
+  if (!v && v !== 0) return '—';
+  const n = parseFloat(String(v).replace(/\./g,'').replace(',','.'));
+  if (isNaN(n)) return '—';
+  return 'R$ ' + n.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+}
+function parseValor(v) {
+  if (!v) return 0;
+  return parseFloat(String(v).replace(/\./g,'').replace(',','.')) || 0;
+}
+function maskValor(el) {
+  let v = el.value.replace(/\D/g,'');
+  if (!v) { el.value=''; return; }
+  v = (parseInt(v,10)/100).toFixed(2);
+  el.value = parseFloat(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+}
+function exitoBadge(e) {
+  const map = {'Habilitação de Crédito':'badge-green','Impugnação Procedente':'badge-gold','Recuperação de Ativos':'badge-blue','Acordo Homologado':'badge-green','Decretação de Falência':'badge-red','Plano Aprovado':'badge-gold','Arrematação':'badge-blue','Outro':'badge-gold'};
+  return `<span class="badge ${map[e]||'badge-gold'}">${e}</span>`;
+}
+function toast(msg, icon='✅') {
+  const t = document.getElementById('toast');
+  document.getElementById('toastMsg').textContent = msg;
+  document.getElementById('toastIcon').textContent = icon;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2800);
+}
+
+// ── NAVIGATION ────────────────────────────────────────────────────────────────
+function goPage(name) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  document.getElementById('nav-'+name).classList.add('active');
+  // Hide FAB on share page
+  document.getElementById('fab').style.display = name === 'share' ? 'none' : '';
+  render();
+}
+
+// ── FILTER ───────────────────────────────────────────────────────────────────
+function setFilter(el) {
+  document.querySelectorAll('.filter-chip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  activeFilter = el.dataset.filter;
+  render();
+}
+
+// ── STATS ────────────────────────────────────────────────────────────────────
+function updateStats() {
+  document.getElementById('statTotal').textContent = records.length;
+  const total = records.reduce((a,r)=>a+parseValor(r.valor),0);
+  const fmt = total >= 1e6 ? 'R$'+(total/1e6).toFixed(1)+'M' : total >= 1e3 ? 'R$'+(total/1e3).toFixed(0)+'k' : 'R$'+total.toFixed(0);
+  document.getElementById('statValor').textContent = fmt;
+  document.getElementById('statProcessos').textContent = new Set(records.map(r=>r.processo).filter(Boolean)).size;
+  document.getElementById('statProcuradores').textContent = new Set(records.map(r=>r.procurador).filter(Boolean)).size;
+}
+
+// ── RENDER ────────────────────────────────────────────────────────────────────
+function getFiltered(forceAll) {
+  const q = (document.getElementById('searchInput')?.value||'').toLowerCase();
+  const sb = document.getElementById('sortBy')?.value || 'data_desc';
+  let list = records.filter(r => {
+    const matchQ = !q || (r.processo||'').toLowerCase().includes(q)||(r.procurador||'').toLowerCase().includes(q)||(r.exito||'').toLowerCase().includes(q)||(r.obs||'').toLowerCase().includes(q);
+    const matchF = forceAll || !activeFilter || r.exito === activeFilter;
+    return matchQ && matchF;
+  });
+  list.sort((a,b) => {
+    if (sb==='data_desc') return (b.data||'')>(a.data||'')?1:-1;
+    if (sb==='data_asc') return (a.data||'')>(b.data||'')?1:-1;
+    if (sb==='valor_desc') return parseValor(b.valor)-parseValor(a.valor);
+    if (sb==='valor_asc') return parseValor(a.valor)-parseValor(b.valor);
+    if (sb==='procurador') return (a.procurador||'').localeCompare(b.procurador||'','pt');
+    return 0;
+  });
+  return list;
+}
+
+function renderCards(list, containerId) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  if (!list.length) {
+    el.innerHTML = `<div class="empty-state"><div class="icon">📂</div><p>${records.length?'Nenhum registro encontrado.':'Nenhum êxito registrado ainda.'}</p>${!records.length?`<button class="btn btn-gold" onclick="openModal()">＋ Adicionar primeiro êxito</button>`:''}</div>`;
+    return;
+  }
+  el.innerHTML = list.map(r => `
+    <div class="record-card" onclick="openEdit('${r.id}')">
+      <div class="record-card-top">
+        <div>
+          <div class="record-processo">${r.processo||'—'}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:0.5rem;flex-shrink:0;">
+          <div class="record-date">${formatDate(r.data)}</div>
+          <button class="icon-btn" onclick="event.stopPropagation();deleteRecord('${r.id}')">🗑️</button>
+        </div>
+      </div>
+      <div class="record-procurador">${r.procurador||'—'}</div>
+      ${r.obs?`<div class="record-obs">${r.obs}</div>`:''}
+      <div class="record-bottom">
+        ${exitoBadge(r.exito||'Outro')}
+        <div class="record-valor">${formatValor(r.valor)}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function render() {
+  updateStats();
+  renderCards(getFiltered(false), 'recordsList');
+  renderCards(getFiltered(true), 'recordsListFull');
+}
+
+// ── MODAL ─────────────────────────────────────────────────────────────────────
+function openModal() {
+  editingId = null;
+  document.getElementById('modalTitle').textContent = '➕ Novo Êxito';
+  document.getElementById('fData').value = new Date().toISOString().slice(0,10);
+  ['fProcesso','fProcurador','fValor','fObs'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('fExito').value = '';
+  document.getElementById('overlay').classList.add('open');
+}
+function openEdit(id) {
+  const r = records.find(x=>x.id===id);
+  if (!r) return;
+  editingId = id;
+  document.getElementById('modalTitle').textContent = '✏️ Editar Êxito';
+  document.getElementById('fData').value = r.data||'';
+  document.getElementById('fProcesso').value = r.processo||'';
+  document.getElementById('fProcurador').value = r.procurador||'';
+  document.getElementById('fExito').value = r.exito||'';
+  document.getElementById('fValor').value = r.valor||'';
+  document.getElementById('fObs').value = r.obs||'';
+  document.getElementById('overlay').classList.add('open');
+}
+function closeModal() { document.getElementById('overlay').classList.remove('open'); }
+
+function saveRecord() {
+  const data = document.getElementById('fData').value;
+  const processo = document.getElementById('fProcesso').value.trim();
+  const procurador = document.getElementById('fProcurador').value.trim();
+  const exito = document.getElementById('fExito').value;
+  const valor = document.getElementById('fValor').value.trim();
+  const obs = document.getElementById('fObs').value.trim();
+  if (!data||!processo||!procurador||!exito) { toast('Preencha os campos obrigatórios.','⚠️'); return; }
+  if (editingId) {
+    const idx = records.findIndex(x=>x.id===editingId);
+    if (idx>-1) records[idx]={...records[idx],data,processo,procurador,exito,valor,obs};
+    toast('Registro atualizado!','✅');
+  } else {
+    records.unshift({id:uid(),data,processo,procurador,exito,valor,obs});
+    toast('Êxito registrado!','✅');
+  }
+  saveData(); closeModal(); render();
+}
+
+function deleteRecord(id) {
+  if (!confirm('Excluir este registro?')) return;
+  records = records.filter(x=>x.id!==id);
+  saveData(); render(); toast('Excluído.','🗑️');
+}
+
+// ── SHARE ─────────────────────────────────────────────────────────────────────
+function shareWhatsApp() {
+  const total = records.length;
+  const valor = records.reduce((a,r)=>a+parseValor(r.valor),0);
+  const txt = encodeURIComponent(`⚖️ *Núcleo de Falência e Recuperação Judicial*\n📋 Controle de Êxitos\n\n• Total de Êxitos: *${total}*\n• Valor Total: *${formatValor(valor.toFixed(2).replace('.',','))}*\n• Procuradores: *${new Set(records.map(r=>r.procurador).filter(Boolean)).size}*\n\n📱 Acesse pelo app ou arquivo compartilhado.`);
+  window.open(`https://wa.me/?text=${txt}`,'_blank');
+}
+function shareEmail() {
+  const total = records.length;
+  const valor = records.reduce((a,r)=>a+parseValor(r.valor),0);
+  const sub = encodeURIComponent('Controle de Êxitos – Núcleo de Falência e Recuperação Judicial');
+  const body = encodeURIComponent(`Prezados,\n\nResumo do Controle de Êxitos:\n\n• Êxitos Registrados: ${total}\n• Valor Total: ${formatValor(valor.toFixed(2).replace('.',','))}\n• Procuradores: ${new Set(records.map(r=>r.procurador).filter(Boolean)).size}\n\nAtenciosamente.`);
+  window.open(`mailto:?subject=${sub}&body=${body}`,'_blank');
+}
+function downloadWithData() {
+  const dataStr = JSON.stringify(records);
+  const html = document.documentElement.outerHTML;
+  const injected = html.replace('</script>', `\n(function(){try{localStorage.setItem('${STORAGE_KEY}',${JSON.stringify(dataStr)});}catch(e){}}());\n</script>`);
+  const blob = new Blob([injected],{type:'text/html;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href=url;
+  a.download=`exitos-frj-${new Date().toISOString().slice(0,10)}.html`;
+  a.click(); URL.revokeObjectURL(url);
+  toast('Arquivo baixado!','⬇️');
+}
+function exportCSV() {
+  const header = ['Data','Número do Processo','Procurador Responsável','Êxito','Valor (R$)','Observações'];
+  const rows = records.map(r=>[formatDate(r.data),r.processo,r.procurador,r.exito,parseValor(r.valor).toFixed(2).replace('.',','),r.obs||''].map(v=>'"'+(v||'').replace(/"/g,'""')+'"').join(';'));
+  const csv='\uFEFF'+[header.join(';'),...rows].join('\r\n');
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a'); a.href=url;
+  a.download=`exitos-${new Date().toISOString().slice(0,10)}.csv`;
+  a.click(); URL.revokeObjectURL(url);
+  toast('CSV exportado!','⬇️');
+}
+
+// ── PWA INSTALL ───────────────────────────────────────────────────────────────
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  if (!localStorage.getItem('installDismissed')) {
+    document.getElementById('installBanner').classList.add('visible');
+  }
+});
+function installApp() {
+  if (!deferredPrompt) { toast('Use o menu do navegador para instalar.','📱'); return; }
+  deferredPrompt.prompt();
+  deferredPrompt.userChoice.then(r => {
+    if (r.outcome==='accepted') toast('App instalado com sucesso!','🎉');
+    deferredPrompt=null;
+    document.getElementById('installBanner').classList.remove('visible');
+  });
+}
+function dismissInstall() {
+  localStorage.setItem('installDismissed','1');
+  document.getElementById('installBanner').classList.remove('visible');
+}
+window.addEventListener('appinstalled', ()=>{ toast('App instalado!','🎉'); document.getElementById('installBanner').classList.remove('visible'); });
+
+// ── OFFLINE ───────────────────────────────────────────────────────────────────
+window.addEventListener('offline',()=>{ document.body.classList.add('offline'); toast('Sem conexão — dados salvos localmente.','📶'); });
+window.addEventListener('online',()=>{ document.body.classList.remove('offline'); toast('Conexão restaurada!','✅'); });
+
+// ── CLOSE MODAL ON BACKDROP ───────────────────────────────────────────────────
+document.getElementById('overlay').addEventListener('click', e => { if(e.target===e.currentTarget) closeModal(); });
+
+// ── SERVICE WORKER ────────────────────────────────────────────────────────────
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js').catch(()=>{});
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+loadData();
+if (!records.length) {
+  records = [
+    {id:uid(),data:'2026-04-10',processo:'5001234-12.2024.8.15.0001',procurador:'Dra. Ana Paula Ferreira',exito:'Habilitação de Crédito',valor:'350.000,00',obs:'Crédito habilitado em falência de construtora'},
+    {id:uid(),data:'2026-03-22',processo:'5000987-45.2023.8.15.0001',procurador:'Dr. Carlos Mendes',exito:'Recuperação de Ativos',valor:'1.200.000,00',obs:'Arrecadação de imóveis em processo falimentar'},
+    {id:uid(),data:'2026-03-05',processo:'5002341-78.2025.8.15.0001',procurador:'Dra. Mariana Costa',exito:'Acordo Homologado',valor:'480.000,00',obs:''},
+    {id:uid(),data:'2026-02-14',processo:'5000123-90.2022.8.15.0001',procurador:'Dr. Ricardo Oliveira',exito:'Plano Aprovado',valor:'2.750.000,00',obs:'Plano aprovado em assembleia'},
+    {id:uid(),data:'2026-01-30',processo:'5003456-21.2024.8.15.0001',procurador:'Dra. Ana Paula Ferreira',exito:'Impugnação Procedente',valor:'95.000,00',obs:''},
+  ];
+  saveData();
+}
+render();
+</script>
+</body>
+</html>
