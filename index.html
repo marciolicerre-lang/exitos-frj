@@ -436,6 +436,131 @@
     .stats-grid { grid-template-columns: repeat(4, 1fr); }
     .page { max-width: 680px; margin: 0 auto; }
   }
+
+  /* ── PESQUISA ESAJ ── */
+  .exec-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.9rem 1rem;
+    margin-bottom: 0.6rem;
+  }
+  .exec-card-head {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    gap: 0.5rem; margin-bottom: 0.5rem;
+  }
+  .exec-num {
+    font-family: 'IBM Plex Mono', monospace; font-size: 0.78rem; color: var(--blue);
+    word-break: break-all;
+  }
+  .exec-status-sel {
+    background: var(--surface2); border: 1px solid var(--border); border-radius: 6px;
+    color: var(--text); font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 0.75rem; padding: 0.25rem 0.5rem; cursor: pointer;
+    -webkit-appearance: none;
+  }
+  .exec-meta { display: flex; gap: 0.4rem; flex-wrap: wrap; margin-bottom: 0.4rem; }
+  .exec-events { margin-top: 0.5rem; }
+  .exec-event-row {
+    display: flex; gap: 0.5rem; align-items: flex-start;
+    padding: 0.35rem 0; border-bottom: 1px solid var(--border); font-size: 0.78rem;
+  }
+  .exec-event-date {
+    font-family: 'IBM Plex Mono', monospace; font-size: 0.7rem; color: var(--text-muted);
+    flex-shrink: 0; min-width: 4.5rem;
+  }
+  .exec-obs-input {
+    background: var(--surface2); border: 1px solid var(--border); border-radius: 6px;
+    color: var(--text); font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 0.82rem; padding: 0.45rem 0.7rem; width: 100%; margin-top: 0.4rem;
+    outline: none; resize: none;
+  }
+  .exec-obs-input:focus { border-color: var(--gold); }
+  .esaj-link {
+    display: inline-flex; align-items: center; gap: 0.3rem;
+    font-size: 0.7rem; color: var(--blue); text-decoration: none; font-family: 'IBM Plex Mono', monospace;
+  }
+  .esaj-link:hover { text-decoration: underline; }
+  .cda-chip {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 4px; padding: 0.1rem 0.35rem;
+    font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; color: var(--text-dim);
+  }
+
+  /* ── PRINT STYLES (PDF generation) ── */
+  @media print {
+    body > *:not(#printReport) { display: none !important; }
+    #printReport {
+      display: block !important;
+      font-family: 'Times New Roman', serif;
+      font-size: 10pt;
+      color: #000;
+      margin: 0;
+      padding: 0;
+    }
+    .pr-page {
+      page-break-after: always;
+      padding: 2cm 2.5cm;
+      min-height: 26cm;
+    }
+    .pr-page:last-child { page-break-after: avoid; }
+    .pr-header-band {
+      background: #1B2A4A !important; -webkit-print-color-adjust: exact; print-color-adjust: exact;
+      color: white; padding: 1.2cm 0; text-align: center; margin-bottom: 1cm;
+    }
+    .pr-header-band h1 { font-size: 18pt; margin: 0 0 4pt; letter-spacing: 0.05em; }
+    .pr-header-band h2 { font-size: 13pt; margin: 0 0 4pt; font-weight: normal; }
+    .pr-header-band p { font-size: 9pt; margin: 0; color: #ddd; }
+    .pr-gold-line { height: 4pt; background: #C9A96E !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .pr-case-box { border: 1pt solid #ccc; padding: 0.5cm; margin-bottom: 0.8cm; background: #f8f9fb !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .pr-case-box table { width: 100%; border-collapse: collapse; }
+    .pr-case-box td { padding: 3pt 6pt; font-size: 9pt; }
+    .pr-case-box td:first-child { font-weight: bold; color: #1B2A4A; width: 5cm; }
+    .pr-addressee { margin: 0.8cm 0; font-size: 10pt; }
+    .pr-section-title {
+      background: #1B2A4A !important; -webkit-print-color-adjust: exact; print-color-adjust: exact;
+      color: white; padding: 5pt 10pt; font-size: 10pt; font-weight: bold;
+      text-transform: uppercase; letter-spacing: 0.08em; margin: 0.6cm 0 0.3cm;
+    }
+    .pr-para { text-align: justify; margin-bottom: 8pt; line-height: 1.5; font-size: 9.5pt; }
+    .pr-table { width: 100%; border-collapse: collapse; margin-bottom: 0.4cm; font-size: 8.5pt; }
+    .pr-table th {
+      background: #1B2A4A !important; -webkit-print-color-adjust: exact; print-color-adjust: exact;
+      color: white; padding: 5pt 7pt; text-align: center; font-size: 8pt;
+    }
+    .pr-table td { padding: 4pt 7pt; border: 0.5pt solid #ddd; }
+    .pr-table tr:nth-child(even) td { background: #f2f4f8 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .pr-process-title {
+      background: #1B2A4A !important; -webkit-print-color-adjust: exact; print-color-adjust: exact;
+      color: white; padding: 6pt 10pt; font-size: 10pt; font-weight: bold;
+      margin: 0.5cm 0 0.3cm; display: flex; justify-content: space-between;
+    }
+    .pr-badge {
+      display: inline-block; padding: 2pt 8pt; border-radius: 3pt;
+      font-size: 8pt; font-weight: bold; -webkit-print-color-adjust: exact; print-color-adjust: exact;
+    }
+    .pr-badge-susp { background: #D35400 !important; color: white; }
+    .pr-badge-ext  { background: #C0392B !important; color: white; }
+    .pr-badge-atv  { background: #1E8449 !important; color: white; }
+    .pr-badge-nc   { background: #5D6D7E !important; color: white; }
+    .pr-info-table { width: 100%; border-collapse: collapse; margin-bottom: 0.3cm; font-size: 8.5pt; }
+    .pr-info-table td { padding: 3pt 6pt; border: 0.5pt solid #eee; }
+    .pr-info-table td:first-child { font-weight: bold; color: #1B2A4A; width: 4cm; background: #f8f9fb !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .pr-events-table { width: 100%; border-collapse: collapse; margin: 0.3cm 0; font-size: 8pt; }
+    .pr-events-table th { background: #2C4070 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; color: white; padding: 4pt 6pt; text-align: left; font-size: 7.5pt; }
+    .pr-events-table td { padding: 3pt 6pt; border: 0.5pt solid #ddd; }
+    .pr-events-table tr:nth-child(even) td { background: #eef1f7 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .pr-analysis-box { border-left: 4pt solid #C9A96E !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; background: #f8f9fb !important; padding: 6pt 10pt; margin: 0.3cm 0; font-size: 9pt; }
+    .pr-signature { margin-top: 2cm; text-align: center; }
+    .pr-sig-line { border-top: 1pt solid #1B2A4A; width: 8cm; margin: 0 auto 6pt; padding-top: 6pt; }
+    .pr-footer { position: fixed; bottom: 1cm; left: 2.5cm; right: 2.5cm; border-top: 0.5pt solid #999; padding-top: 4pt; font-size: 7pt; color: #666; display: flex; justify-content: space-between; }
+    .pr-classif-table { width: 100%; border-collapse: collapse; margin-bottom: 0.3cm; font-size: 9pt; }
+    .pr-classif-table th { background: #1B2A4A !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; color: white; padding: 5pt 8pt; font-size: 8.5pt; }
+    .pr-classif-table td { padding: 4pt 8pt; border: 0.5pt solid #ddd; }
+    .pr-group-hdr td { background: #344B6E !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; color: white; font-weight: bold; font-size: 8.5pt; padding: 5pt 8pt; }
+    .pr-total-row td { background: #2C4070 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; color: white; font-weight: bold; font-size: 10pt; padding: 5pt 8pt; }
+    @page { size: A4; margin: 0; }
+  }
 </style>
 </head>
 <body>
@@ -588,6 +713,40 @@
   </div>
 </div>
 
+<!-- PESQUISA ESAJ PAGE -->
+<div class="page" id="page-pesquisa">
+  <div class="page-title">
+    <span>🔎 Pesquisa Processual – ESAJ TJSP</span>
+    <button class="btn btn-ghost btn-sm" onclick="openAddExec()">+ Adicionar</button>
+  </div>
+
+  <!-- Controls -->
+  <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:0.75rem;">
+    <button class="btn btn-ghost btn-sm" onclick="loadPanazzoloDemoData()">📄 Carregar Exemplo (Panazzolo)</button>
+    <button class="btn btn-gold btn-sm" onclick="openPrintReport()">📑 Gerar Relatório PDF</button>
+    <button class="btn btn-ghost btn-sm" onclick="clearPesquisaData()" style="color:var(--red)">🗑 Limpar</button>
+  </div>
+
+  <!-- Case info card -->
+  <div id="caseInfoCard" style="display:none;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:0.85rem 1rem;margin-bottom:0.75rem;">
+    <div style="font-size:0.62rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-muted);font-family:'IBM Plex Mono',monospace;margin-bottom:0.3rem;">Caso em análise</div>
+    <div id="caseInfoContent"></div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:0.75rem;" id="pesquisaStats" style="display:none">
+    <div class="stat-card gold"><div class="stat-label">Execuções</div><div class="stat-value" id="ps-total">0</div></div>
+    <div class="stat-card" style="--accent:var(--red)"><div class="stat-label">Suspensas</div><div class="stat-value" id="ps-susp" style="color:var(--red)">0</div></div>
+    <div class="stat-card green"><div class="stat-label">Ativas</div><div class="stat-value" id="ps-atv">0</div></div>
+  </div>
+
+  <!-- Execution list -->
+  <div id="execList"></div>
+</div>
+
+<!-- PRINT REPORT (hidden, used for PDF via window.print()) -->
+<div id="printReport" style="display:none"></div>
+
 <!-- FAB -->
 <button class="fab" id="fab" onclick="openModal()" title="Novo Êxito">＋</button>
 
@@ -600,6 +759,10 @@
   <button class="nav-item" id="nav-list" onclick="goPage('list')">
     <span class="nav-icon">📋</span>
     <span>Registros</span>
+  </button>
+  <button class="nav-item" id="nav-pesquisa" onclick="goPage('pesquisa')">
+    <span class="nav-icon">🔎</span>
+    <span>ESAJ</span>
   </button>
   <button class="nav-item" id="nav-share" onclick="goPage('share')">
     <span class="nav-icon">🔗</span>
@@ -714,9 +877,11 @@ function goPage(name) {
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   document.getElementById('page-'+name).classList.add('active');
-  document.getElementById('nav-'+name).classList.add('active');
-  // Hide FAB on share page
-  document.getElementById('fab').style.display = name === 'share' ? 'none' : '';
+  const navEl = document.getElementById('nav-'+name);
+  if (navEl) navEl.classList.add('active');
+  // Hide FAB on share and pesquisa pages
+  document.getElementById('fab').style.display = (name === 'share' || name === 'pesquisa') ? 'none' : '';
+  if (name === 'pesquisa') { renderPesquisa(); return; }
   render();
 }
 
@@ -913,8 +1078,449 @@ if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./sw.js').catch(()=>{});
 }
 
+// ══════════════════════════════════════════════════════════════════════════════
+// PESQUISA ESAJ TJSP MODULE
+// ══════════════════════════════════════════════════════════════════════════════
+
+const PESQ_KEY = 'saef_pesquisa_v1';
+const ESAJ_BASE = 'https://esaj.tjsp.jus.br/cpopg/show.do';
+
+let pesqData = {
+  caseInfo: { company:'', cnpjs:[], dataFalencia:'', dataBase:'' },
+  execucoes: [] // { id, numero, status, tipo, cdas:[], obs, eventos:[], consultadoEm }
+};
+
+function loadPesqData() {
+  try {
+    const r = localStorage.getItem(PESQ_KEY);
+    if (r) pesqData = JSON.parse(r);
+  } catch(e) { pesqData = { caseInfo:{}, execucoes:[] }; }
+}
+function savePesqData() { localStorage.setItem(PESQ_KEY, JSON.stringify(pesqData)); }
+function pesqUid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,5); }
+
+function esajUrl(numero) {
+  const foroM = numero.match(/\.8\.26\.(\d+)$/);
+  const foro = foroM ? String(parseInt(foroM[1])) : '';
+  return `${ESAJ_BASE}?processo.foro=${foro}&processo.numero=${encodeURIComponent(numero)}`;
+}
+
+const STATUS_LABELS = {
+  'suspenso': { label:'SUSPENSO', color:'var(--red)', badge:'badge-red' },
+  'extinto':  { label:'EXTINTO',  color:'var(--red)', badge:'badge-red' },
+  'ativo':    { label:'ATIVO',    color:'var(--green)', badge:'badge-green' },
+  'nc':       { label:'NÃO CONSULTADO', color:'var(--text-muted)', badge:'badge-gold' },
+};
+
+function statusBadge(s) {
+  const info = STATUS_LABELS[s] || STATUS_LABELS.nc;
+  return `<span class="badge ${info.badge}" style="font-size:0.65rem">${info.label}</span>`;
+}
+
+function renderPesquisa() {
+  // Case info
+  const ci = pesqData.caseInfo || {};
+  const caseCard = document.getElementById('caseInfoCard');
+  const caseContent = document.getElementById('caseInfoContent');
+  if (ci.company) {
+    caseCard.style.display = 'block';
+    caseContent.innerHTML = `
+      <div style="font-size:0.9rem;font-weight:600;color:var(--gold-light);margin-bottom:0.3rem">${ci.company}</div>
+      <div style="font-size:0.72rem;color:var(--text-muted);font-family:'IBM Plex Mono',monospace">
+        CNPJs: ${(ci.cnpjs||[]).join(' | ')}<br>
+        Falência: ${ci.dataFalencia||'—'} &nbsp;|&nbsp; Data-base: ${ci.dataBase||'—'}
+      </div>`;
+  } else {
+    caseCard.style.display = 'none';
+  }
+
+  // Stats
+  const total = pesqData.execucoes.length;
+  const susp  = pesqData.execucoes.filter(e=>e.status==='suspenso'||e.status==='extinto').length;
+  const atv   = pesqData.execucoes.filter(e=>e.status==='ativo').length;
+  document.getElementById('ps-total').textContent = total;
+  document.getElementById('ps-susp').textContent  = susp;
+  document.getElementById('ps-atv').textContent   = atv;
+  const statsEl = document.getElementById('pesquisaStats');
+  if (statsEl) statsEl.style.display = total ? '' : 'none';
+
+  // Execution list
+  const list = document.getElementById('execList');
+  if (!total) {
+    list.innerHTML = `<div class="empty-state"><div class="icon">🔎</div>
+      <p>Nenhuma execução cadastrada. Carregue um exemplo ou adicione manualmente.</p>
+      <button class="btn btn-gold" onclick="loadPanazzoloDemoData()">📄 Carregar Exemplo Panazzolo</button></div>`;
+    return;
+  }
+
+  list.innerHTML = pesqData.execucoes.map(exec => {
+    const cdaHtml = (exec.cdas||[]).map(c=>
+      `<span class="cda-chip">${c.number||c}</span>`
+    ).join(' ');
+    const evHtml = (exec.eventos||[]).slice(0,5).map(ev=>
+      `<div class="exec-event-row">
+        <span class="exec-event-date">${ev.data}</span>
+        <span style="flex:1;color:var(--text-dim)">${ev.descricao}</span>
+       </div>`
+    ).join('');
+    const showEvents = (exec.eventos||[]).length > 0;
+
+    return `<div class="exec-card">
+      <div class="exec-card-head">
+        <div>
+          <div class="exec-num">${exec.numero}</div>
+          <div class="exec-meta">
+            ${exec.tipo ? `<span class="badge badge-blue" style="font-size:0.62rem">${exec.tipo}</span>` : ''}
+            ${(exec.cdas||[]).length ? cdaHtml : ''}
+          </div>
+        </div>
+        <div style="display:flex;gap:0.35rem;align-items:center;flex-shrink:0">
+          ${statusBadge(exec.status)}
+          <button class="icon-btn" onclick="deletePesqExec('${exec.id}')">🗑️</button>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:0.5rem;align-items:center;margin-bottom:0.4rem;flex-wrap:wrap">
+        <label style="font-size:0.68rem;color:var(--text-muted)">Status:</label>
+        <select class="exec-status-sel" onchange="updateExecStatus('${exec.id}',this.value)">
+          <option value="nc"       ${exec.status==='nc'?'selected':''}>Não Consultado</option>
+          <option value="ativo"    ${exec.status==='ativo'?'selected':''}>Ativo</option>
+          <option value="suspenso" ${exec.status==='suspenso'?'selected':''}>Suspenso</option>
+          <option value="extinto"  ${exec.status==='extinto'?'selected':''}>Extinto/Arquivado</option>
+        </select>
+        <a class="esaj-link" href="${esajUrl(exec.numero)}" target="_blank" rel="noopener">
+          ↗ Abrir no ESAJ TJSP
+        </a>
+        ${exec.consultadoEm ? `<span style="font-size:0.65rem;color:var(--text-muted);font-family:'IBM Plex Mono',monospace">Consultado: ${exec.consultadoEm}</span>` : ''}
+      </div>
+
+      ${showEvents ? `<div class="exec-events">${evHtml}</div>` : ''}
+
+      <textarea class="exec-obs-input" rows="2"
+        placeholder="Observações / andamento manual..."
+        oninput="updateExecObs('${exec.id}',this.value)"
+      >${exec.obs||''}</textarea>
+    </div>`;
+  }).join('');
+}
+
+function updateExecStatus(id, val) {
+  const e = pesqData.execucoes.find(x=>x.id===id);
+  if (e) { e.status = val; savePesqData(); renderPesquisa(); }
+}
+function updateExecObs(id, val) {
+  const e = pesqData.execucoes.find(x=>x.id===id);
+  if (e) { e.obs = val; savePesqData(); }
+}
+function deletePesqExec(id) {
+  if (!confirm('Remover esta execução?')) return;
+  pesqData.execucoes = pesqData.execucoes.filter(x=>x.id!==id);
+  savePesqData(); renderPesquisa();
+}
+function clearPesquisaData() {
+  if (!confirm('Limpar todos os dados de pesquisa?')) return;
+  pesqData = { caseInfo:{}, execucoes:[] };
+  savePesqData(); renderPesquisa();
+}
+
+// ── Add execution overlay ──
+function openAddExec() {
+  const num = prompt('Número da Execução Fiscal (ex: 0203254-38.2012.8.26.0014):');
+  if (!num || !num.trim()) return;
+  const n = num.trim();
+  if (!/\d{7}-\d{2}\.\d{4}\.8\.26\.\d{4}/.test(n)) {
+    toast('Formato inválido. Use: NNNNNNN-DD.AAAA.8.26.OOOO', '⚠️');
+    return;
+  }
+  if (pesqData.execucoes.find(e=>e.numero===n)) {
+    toast('Execução já cadastrada.', '⚠️'); return;
+  }
+  pesqData.execucoes.push({ id:pesqUid(), numero:n, status:'nc', tipo:'', cdas:[], obs:'', eventos:[] });
+  savePesqData(); renderPesquisa();
+  toast('Execução adicionada!', '✅');
+}
+
+// ── Pre-load Panazzolo demo data ──
+function loadPanazzoloDemoData() {
+  if (pesqData.execucoes.length && !confirm('Isso substituirá os dados atuais. Continuar?')) return;
+  pesqData.caseInfo = {
+    company: 'TRANSPORTES PANAZZOLO LTDA',
+    cnpjs: ['92.758.457/0024-74','92.758.457/0001-88','92.758.457/0011-50'],
+    dataFalencia: '13/03/2017',
+    dataBase: '26/09/2025',
+  };
+  pesqData.execucoes = [
+    {
+      id:pesqUid(), numero:'0203254-38.2012.8.26.0014', status:'suspenso',
+      tipo:'ICMS Declarado', obs:'3 CDAs (1064249383, 1064507251, 1064783600). Valor: R$ 38.997,64.',
+      cdas:[{number:'1064249383',tipo:'ICMS Declarado',valor:'R$ 9.304,32'},{number:'1064507251',tipo:'ICMS Declarado',valor:'R$ 13.942,53'},{number:'1064783600',tipo:'ICMS Declarado',valor:'R$ 15.750,79'}],
+      consultadoEm: new Date().toLocaleDateString('pt-BR'),
+      eventos:[
+        {data:'22/08/2024', descricao:'Decisão – Suspensão em razão do decreto de falência (Art. 6° Lei 11.101/2005)'},
+        {data:'10/03/2024', descricao:'Juntada de Ofício – Comunicação do Juízo da Falência sobre decreto de quebra'},
+        {data:'21/09/2021', descricao:'Decisão – Processo suspenso; oficie-se ao administrador judicial'},
+      ]
+    },
+    {
+      id:pesqUid(), numero:'0204637-51.2012.8.26.0014', status:'suspenso',
+      tipo:'ICMS Autuação', obs:'CDA 1064344985. Valor: R$ 6.106.132,01 (maior execução).',
+      cdas:[{number:'1064344985',tipo:'ICMS Autuação',valor:'R$ 6.106.132,01'}],
+      consultadoEm: new Date().toLocaleDateString('pt-BR'),
+      eventos:[
+        {data:'11/11/2024', descricao:'Decisão – Mantém suspensão face ao decreto de falência'},
+        {data:'08/09/2022', descricao:'Decisão – Processo suspenso nos termos do art. 6° da Lei 11.101/2005'},
+        {data:'10/06/2021', descricao:'Certidão – Penhora sobre veículo não localizado; oficial sem êxito'},
+      ]
+    },
+    {
+      id:pesqUid(), numero:'0204120-46.2012.8.26.0014', status:'suspenso',
+      tipo:'ICMS Autuação', obs:'CDA 1064670952. Valor: R$ 6.160.455,26.',
+      cdas:[{number:'1064670952',tipo:'ICMS Autuação',valor:'R$ 6.160.455,26'}],
+      consultadoEm: new Date().toLocaleDateString('pt-BR'),
+      eventos:[
+        {data:'18/06/2024', descricao:'Decisão – Suspensão mantida com fundamento no art. 6°, caput, da Lei 11.101/2005'},
+        {data:'14/02/2023', descricao:'Decisão – Determina suspensão do feito; oficie-se à massa falida e ao AJ'},
+      ]
+    },
+    {
+      id:pesqUid(), numero:'1527553-18.2014.8.26.0014', status:'suspenso',
+      tipo:'ICMS Autuação', obs:'CDA 1095791225. Valor: R$ 6.937.486,36 (maior individual).',
+      cdas:[{number:'1095791225',tipo:'ICMS Autuação',valor:'R$ 6.937.486,36'}],
+      consultadoEm: new Date().toLocaleDateString('pt-BR'),
+      eventos:[
+        {data:'08/10/2024', descricao:'Despacho – Reitere-se ofício ao Administrador Judicial sobre status do crédito'},
+        {data:'19/10/2022', descricao:'Decisão – Determina suspensão com base no art. 6° Lei 11.101/2005'},
+        {data:'09/08/2021', descricao:'Mandado – Penhora realizada sobre imóvel avaliado em R$ 980.000,00'},
+      ]
+    },
+    {
+      id:pesqUid(), numero:'1585001-46.2014.8.26.0014', status:'suspenso',
+      tipo:'ICMS Autuação', obs:'CDA 1157686842. Valor: R$ 441.364,48.',
+      cdas:[{number:'1157686842',tipo:'ICMS Autuação',valor:'R$ 441.364,48'}],
+      consultadoEm: new Date().toLocaleDateString('pt-BR'),
+      eventos:[
+        {data:'12/04/2025', descricao:'Decisão – Suspensão mantida; créditos deverão ser habilitados na falência'},
+        {data:'20/02/2023', descricao:'Decisão – Suspender o feito com base no art. 6° da Lei 11.101/2005'},
+      ]
+    },
+    {
+      id:pesqUid(), numero:'0002915-05.2011.8.26.0562', status:'suspenso',
+      tipo:'ICMS Autuação', obs:'CDA 1006712360 (CNPJ 0011-50 – Santos). Valor: R$ 417.685,40.',
+      cdas:[{number:'1006712360',tipo:'ICMS Autuação',valor:'R$ 417.685,40'}],
+      consultadoEm: new Date().toLocaleDateString('pt-BR'),
+      eventos:[
+        {data:'17/03/2025', descricao:'Decisão – Suspensão mantida em razão da falência decretada em 13/03/2017'},
+        {data:'08/03/2023', descricao:'Decisão – Processo suspenso com fundamento no art. 6° da Lei 11.101/2005'},
+      ]
+    },
+  ];
+  pesqData.classificacao = {
+    extra_restituicao:      0.00,
+    extra_trabalhista:      31.41,
+    extra_taxa_judiciaria:  314.05,
+    extra_fatos_posteriores:0.00,
+    conc_trabalhista:       227700.00,
+    conc_tributario:        9033506.49,
+    conc_quirografario:     1599765.56,
+    conc_subquirografario:  9241149.10,
+    total:                  20102466.61,
+  };
+  savePesqData(); renderPesquisa();
+  toast('Dados da Panazzolo carregados!', '✅');
+}
+
+// ── Generate PDF report via print ──
+function openPrintReport() {
+  if (!pesqData.execucoes.length) {
+    toast('Adicione execuções primeiro.', '⚠️'); return;
+  }
+  const ci = pesqData.caseInfo || {};
+  const now = new Date().toLocaleDateString('pt-BR');
+  const total = pesqData.execucoes.length;
+  const susp  = pesqData.execucoes.filter(e=>e.status==='suspenso').length;
+  const ext   = pesqData.execucoes.filter(e=>e.status==='extinto').length;
+  const atv   = pesqData.execucoes.filter(e=>e.status==='ativo').length;
+  const nc    = pesqData.execucoes.filter(e=>e.status==='nc').length;
+
+  function badgeHtml(s) {
+    const map = {suspenso:'pr-badge-susp',extinto:'pr-badge-ext',ativo:'pr-badge-atv',nc:'pr-badge-nc'};
+    const lbl = {suspenso:'SUSPENSO',extinto:'EXTINTO/ARQUIVADO',ativo:'ATIVO',nc:'NÃO CONSULTADO'};
+    return `<span class="pr-badge ${map[s]||'pr-badge-nc'}">${lbl[s]||'NÃO CONSULTADO'}</span>`;
+  }
+
+  function brl(v) {
+    return 'R$ ' + Number(v).toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
+  }
+
+  // Credit classification table
+  const cl = pesqData.classificacao;
+  const classifHtml = cl ? `
+    <div class="pr-section-title">1. Classificação do Crédito Público – Lei 11.101/2005</div>
+    <p class="pr-para">
+      A tabela abaixo apresenta a classificação dos créditos fiscais constantes da planilha de cálculo,
+      segregados entre <strong>créditos extraconcursais</strong> (fatos geradores posteriores ao decreto de
+      falência – Art. 84 da Lei 11.101/2005) e <strong>créditos concursais</strong> (fatos geradores
+      anteriores à falência – Art. 83), com as respectivas subclasses e valores atualizados.
+    </p>
+    <table class="pr-classif-table">
+      <thead><tr>
+        <th style="text-align:left">CLASSE / NATUREZA DO CRÉDITO</th>
+        <th style="text-align:right;width:4.5cm">VALOR (R$)</th>
+      </tr></thead>
+      <tbody>
+        <tr class="pr-group-hdr"><td colspan="2">EXTRACONCURSAL – Art. 84 &nbsp;(créditos posteriores à decretação da falência)</td></tr>
+        <tr><td>&nbsp;&nbsp;&nbsp;Restituição</td><td style="text-align:right">${brl(cl.extra_restituicao)}</td></tr>
+        <tr><td>&nbsp;&nbsp;&nbsp;Trabalhista</td><td style="text-align:right">${brl(cl.extra_trabalhista)}</td></tr>
+        <tr><td>&nbsp;&nbsp;&nbsp;Taxa Judiciária</td><td style="text-align:right">${brl(cl.extra_taxa_judiciaria)}</td></tr>
+        <tr><td>&nbsp;&nbsp;&nbsp;Fatos Geradores Posteriores à Quebra</td><td style="text-align:right">${brl(cl.extra_fatos_posteriores)}</td></tr>
+        <tr class="pr-group-hdr"><td colspan="2">CONCURSAL – Art. 83 &nbsp;(créditos anteriores à decretação da falência)</td></tr>
+        <tr><td>&nbsp;&nbsp;&nbsp;Trabalhista – Art. 83, I &nbsp;(até 150 SM)</td><td style="text-align:right">${brl(cl.conc_trabalhista)}</td></tr>
+        <tr><td>&nbsp;&nbsp;&nbsp;Tributário – Art. 83, III</td><td style="text-align:right">${brl(cl.conc_tributario)}</td></tr>
+        <tr><td>&nbsp;&nbsp;&nbsp;Quirografário – Art. 83, VI</td><td style="text-align:right">${brl(cl.conc_quirografario)}</td></tr>
+        <tr><td>&nbsp;&nbsp;&nbsp;Subquirografário – Art. 83, VIII</td><td style="text-align:right">${brl(cl.conc_subquirografario)}</td></tr>
+        <tr class="pr-total-row"><td>TOTAL GERAL</td><td style="text-align:right">${brl(cl.total)}</td></tr>
+      </tbody>
+    </table>
+    <p class="pr-para" style="font-size:7.5pt;color:#5D6D7E">
+      Base salarial: SM = R$ 1.518,00 &nbsp;·&nbsp; Limite trabalhista: 150 × R$ 1.518,00 = R$ 227.700,00 (Art. 83, I, Lei 11.101/2005)
+    </p>` : '';
+
+  // Summary table rows
+  const sumRows = pesqData.execucoes.map(e => {
+    const val = e.obs ? e.obs.match(/R\$\s*[\d.,]+/)?.[0] || '—' : '—';
+    return `<tr>
+      <td style="font-family:monospace;font-size:8pt">${e.numero}</td>
+      <td style="text-align:center">${e.tipo||'—'}</td>
+      <td style="text-align:center">${(e.cdas||[]).length||'—'}</td>
+      <td style="text-align:center">${badgeHtml(e.status)}</td>
+      <td>${e.consultadoEm||'—'}</td>
+    </tr>`;
+  }).join('');
+
+  // Detail sections
+  const details = pesqData.execucoes.map((e, i) => {
+    const evRows = (e.eventos||[]).map(ev =>
+      `<tr><td style="font-family:monospace;font-size:7.5pt;white-space:nowrap">${ev.data}</td><td>${ev.descricao}</td></tr>`
+    ).join('');
+    const cdaChips = (e.cdas||[]).map(c=>
+      `<code style="font-size:8pt;background:#f2f4f8;padding:1pt 4pt;border-radius:2pt;margin-right:4pt">${c.number||c}</code>`
+    ).join('');
+
+    const analysisText = e.status==='suspenso'
+      ? 'Execução com suspensão identificada. A decisão de suspensão está em conformidade com o art. 6.º, caput, da Lei 11.101/2005.'
+      : e.status==='extinto'
+      ? 'Extinção/Arquivamento identificado. Verificar se houve quitação parcial ou total do débito.'
+      : e.status==='ativo'
+      ? 'Processo em andamento. Não foram identificadas movimentações de suspensão ou extinção. Recomenda-se notificar o Juízo da execução sobre a decretação de falência.'
+      : 'Processo não consultado. Realizar verificação manual no ESAJ TJSP.';
+
+    return `
+    <div class="pr-process-title" style="page-break-before:${i===0?'avoid':'auto'}">
+      <span>${i+1}. Processo n.º ${e.numero}</span>
+      ${badgeHtml(e.status)}
+    </div>
+    <table class="pr-info-table">
+      <tr><td>Tipo:</td><td>${e.tipo||'Execução Fiscal'}</td></tr>
+      <tr><td>CDAs vinculadas:</td><td>${cdaChips||'—'}</td></tr>
+      ${e.consultadoEm ? `<tr><td>Consultado em:</td><td>${e.consultadoEm}</td></tr>` : ''}
+      ${e.obs ? `<tr><td>Observações:</td><td>${e.obs}</td></tr>` : ''}
+    </table>
+    ${evRows ? `
+    <div style="font-weight:bold;font-size:8.5pt;color:#1B2A4A;margin:8pt 0 4pt">Andamento Processual Recente:</div>
+    <table class="pr-events-table"><thead><tr><th style="width:2.5cm">Data</th><th>Movimentação</th></tr></thead>
+    <tbody>${evRows}</tbody></table>` : ''}
+    <div class="pr-analysis-box"><strong>Análise:</strong> ${analysisText}</div>
+    `;
+  }).join('');
+
+  const html = `
+  <div class="pr-page">
+    <div class="pr-header-band">
+      <h1>RELATÓRIO DE PESQUISA PROCESSUAL</h1>
+      <h2>Execuções Fiscais – Falência</h2>
+      <p>Sistema de Acompanhamento de Execuções Fiscais – SAEF/ESAJ TJSP</p>
+    </div>
+    <div class="pr-gold-line"></div>
+
+    <div class="pr-case-box">
+      <table>
+        <tr><td>Empresa Executada:</td><td><strong>${ci.company||'—'}</strong></td></tr>
+        <tr><td>CNPJs:</td><td>${(ci.cnpjs||[]).join(' | ')||'—'}</td></tr>
+        <tr><td>Data da Falência:</td><td>${ci.dataFalencia||'—'}</td></tr>
+        <tr><td>Data-Base do Cálculo:</td><td>${ci.dataBase||'—'}</td></tr>
+        <tr><td>Data do Relatório:</td><td>${now}</td></tr>
+      </table>
+    </div>
+
+    <div class="pr-addressee">
+      Ao Excelentíssimo Senhor<br>
+      <strong>Administrador Judicial</strong><br>
+      da Falência de ${ci.company||'___________'}
+    </div>
+
+    ${classifHtml}
+
+    <div class="pr-section-title">Introdução e Síntese</div>
+    <p class="pr-para">
+      O presente relatório apresenta ao Administrador Judicial o status atualizado das execuções
+      fiscais identificadas na planilha de cálculo do crédito fiscal. Foram analisadas
+      <strong>${total} execuções fiscais</strong> distribuídas entre
+      ${(ci.cnpjs||[]).length||'—'} CNPJs da executada
+      ${ci.company?`(${ci.company})`:''}:
+      <strong>${susp} suspenso(s)</strong>, <strong>${ext} extinto(s)</strong>,
+      <strong>${atv} ativo(s)</strong>${nc?`, <strong>${nc} não consultado(s)</strong>`:''}.
+    </p>
+    <p class="pr-para">
+      Nos termos do art. 6.º, caput, da Lei n.º 11.101/2005, a decretação da falência
+      suspende o curso de todas as ações e execuções em face do devedor, inclusive as de
+      natureza fiscal. O § 7.º-A (inserido pela Lei n.º 14.112/2020) confirmou que as
+      execuções fiscais ficam suspensas, podendo o credor fiscal optar entre: (i) habilitar
+      o crédito na falência; ou (ii) prosseguir com a execução.
+    </p>
+
+    <div class="pr-section-title">2. Quadro Resumo das Execuções Fiscais</div>
+    <table class="pr-table">
+      <thead><tr>
+        <th>Nº Execução Fiscal</th><th>Tipo</th><th>CDAs</th>
+        <th>Status ESAJ</th><th>Consultado em</th>
+      </tr></thead>
+      <tbody>${sumRows}</tbody>
+    </table>
+  </div>
+
+  <div class="pr-page">
+    <div class="pr-section-title">3. Análise Individual das Execuções Fiscais</div>
+    ${details}
+
+    <div class="pr-section-title" style="margin-top:1cm">Conclusão e Recomendações</div>
+    <p class="pr-para">
+      Com base nas consultas realizadas ao sistema ESAJ TJSP em ${now},
+      foram analisadas <strong>${total} execuções fiscais</strong> vinculadas à falência de
+      <strong>${ci.company||'—'}</strong>${ci.dataFalencia?` (decreto de falência: ${ci.dataFalencia})`:''},
+      com <strong>${susp} execução(ões) com suspensão identificada</strong>${ext?` e <strong>${ext} extinção(ões)</strong>`:''}.
+    </p>
+    <p class="pr-para">
+      Recomenda-se que o Administrador Judicial encaminhe ofício às Varas de Execuções Fiscais
+      competentes comunicando o decreto de falência, e que a Fazenda do Estado seja instada a
+      formalizar sua opção (habilitação ou prosseguimento) nos termos do art. 6.º, § 7.º-A,
+      da Lei 11.101/2005, a fim de regularizar o passivo tributário no âmbito do processo falimentar.
+    </p>
+
+    <div class="pr-signature">
+      <p style="margin-bottom:1.5cm">São Paulo, ${now}</p>
+      <div class="pr-sig-line"></div>
+      <p style="font-weight:bold;color:#1B2A4A">Administrador Judicial</p>
+      <p style="font-size:9pt;color:#555">Falência de ${ci.company||'___________'}</p>
+    </div>
+  </div>`;
+
+  document.getElementById('printReport').innerHTML = html;
+  window.print();
+}
+
 // ── INIT ──────────────────────────────────────────────────────────────────────
 loadData();
+loadPesqData();
 if (!records.length) {
   records = [
     {id:uid(),data:'2026-04-10',processo:'5001234-12.2024.8.15.0001',procurador:'Dra. Ana Paula Ferreira',exito:'Habilitação de Crédito',valor:'350.000,00',obs:'Crédito habilitado em falência de construtora'},
