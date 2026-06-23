@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Classificação de Crédito Público — FRJ</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#0d0f14; --surface:#13161d; --surface2:#1a1e28;
+  --border:#252a38; --gold:#c9a96e; --gold-light:#e8c98a;
+  --gold-dim:rgba(201,169,110,0.12); --green:#3ecf8e;
+  --green-dim:rgba(62,207,142,0.1); --red:#f26969;
+  --red-dim:rgba(242,105,105,0.1); --blue:#5b9cf6;
+  --blue-dim:rgba(91,156,246,0.1); --text:#e8eaf0;
+  --text-muted:#6b7280; --text-dim:#9ca3af;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+header{
+  background:var(--surface);border-bottom:1px solid var(--border);
+  padding:0 1.5rem;height:56px;display:flex;align-items:center;
+  justify-content:space-between;position:sticky;top:0;z-index:100;
+}
+.logo{display:flex;align-items:center;gap:0.75rem;}
+.logo-icon{width:32px;height:32px;background:linear-gradient(135deg,var(--gold),var(--gold-light));border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;}
+.logo-text h1{font-family:'Playfair Display',serif;font-size:0.95rem;color:var(--gold-light);line-height:1.15;}
+.logo-text span{font-size:0.58rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.1em;font-family:'IBM Plex Mono',monospace;}
+.back-btn{background:none;border:1px solid var(--border);color:var(--text-dim);padding:0.4rem 0.9rem;border-radius:8px;cursor:pointer;font-size:0.8rem;font-family:'IBM Plex Sans',sans-serif;transition:all 0.15s;text-decoration:none;display:inline-flex;align-items:center;gap:0.3rem;}
+.back-btn:hover{border-color:var(--gold);color:var(--gold);}
+main{max-width:960px;margin:0 auto;padding:1.5rem 1.25rem 3rem;}
+.section-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.5rem;margin-bottom:1.25rem;}
+.section-title{font-family:'Playfair Display',serif;font-size:1.05rem;color:var(--gold-light);margin-bottom:1.25rem;display:flex;align-items:center;gap:0.5rem;}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
+@media(max-width:620px){.form-grid{grid-template-columns:1fr;}}
+.form-group{display:flex;flex-direction:column;gap:0.35rem;}
+.form-label{font-size:0.67rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-muted);font-family:'IBM Plex Mono',monospace;}
+.form-input{
+  background:var(--surface2);border:1px solid var(--border);border-radius:8px;
+  color:var(--text);font-family:'IBM Plex Sans',sans-serif;font-size:0.9rem;
+  padding:0.65rem 0.85rem;outline:none;transition:border-color 0.2s;width:100%;
+}
+.form-input:focus{border-color:var(--gold);}
+.form-input::placeholder{color:var(--text-muted);}
+.api-wrap{position:relative;}
+.api-wrap .form-input{padding-right:2.75rem;}
+.api-toggle{position:absolute;right:0.7rem;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:1rem;line-height:1;}
+.upload-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
+@media(max-width:620px){.upload-grid{grid-template-columns:1fr;}}
+.upload-zone{
+  border:2px dashed var(--border);border-radius:12px;padding:2rem 1rem;
+  text-align:center;cursor:pointer;transition:all 0.2s;
+  background:var(--surface2);min-height:160px;display:flex;flex-direction:column;align-items:center;justify-content:center;
+}
+.upload-zone:hover,.upload-zone.drag{border-color:var(--gold);background:var(--gold-dim);}
+.upload-zone.loaded{border-color:var(--green);border-style:solid;background:var(--green-dim);}
+.upload-icon{font-size:2.2rem;margin-bottom:0.6rem;}
+.upload-label{font-size:0.85rem;font-weight:500;color:var(--text);margin-bottom:0.3rem;}
+.upload-sub{font-size:0.7rem;color:var(--text-muted);}
+.upload-name{font-family:'IBM Plex Mono',monospace;font-size:0.68rem;color:var(--green);margin-top:0.5rem;word-break:break-all;max-width:100%;}
+.progress-steps{display:flex;flex-direction:column;gap:0;}
+.progress-step{display:flex;align-items:center;gap:0.85rem;padding:0.7rem 0;border-bottom:1px solid var(--border);}
+.progress-step:last-child{border-bottom:none;}
+.step-dot{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.72rem;flex-shrink:0;font-weight:600;transition:all 0.3s;}
+.step-dot.wait{background:var(--surface2);color:var(--text-muted);border:1px solid var(--border);}
+.step-dot.run{background:var(--gold-dim);color:var(--gold);border:1px solid rgba(201,169,110,0.4);animation:pulse 1.2s ease-in-out infinite;}
+.step-dot.done{background:var(--green-dim);color:var(--green);border:1px solid rgba(62,207,142,0.35);}
+.step-dot.err{background:var(--red-dim);color:var(--red);border:1px solid rgba(242,105,105,0.35);}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.45}}
+.step-text{display:flex;flex-direction:column;gap:0.15rem;}
+.step-label{font-size:0.85rem;transition:color 0.2s;}
+.step-label.active{color:var(--gold-light);}
+.step-label.done{color:var(--green);}
+.step-label.err{color:var(--red);}
+.step-sub{font-size:0.7rem;color:var(--text-muted);}
+.btn{
+  display:inline-flex;align-items:center;gap:0.4rem;
+  padding:0.65rem 1.2rem;border-radius:8px;
+  font-size:0.85rem;font-family:'IBM Plex Sans',sans-serif;
+  font-weight:500;cursor:pointer;border:none;transition:all 0.15s;white-space:nowrap;
+}
+.btn:active{transform:scale(0.96);}
+.btn:disabled{opacity:0.4;cursor:not-allowed;transform:none;}
+.btn-gold{background:linear-gradient(135deg,var(--gold),var(--gold-light));color:#0d0f14;font-weight:600;}
+.btn-ghost{background:transparent;color:var(--text-dim);border:1px solid var(--border);}
+.btn-green{background:var(--green-dim);color:var(--green);border:1px solid rgba(62,207,142,0.3);}
+.btn-blue{background:var(--blue-dim);color:var(--blue);border:1px solid rgba(91,156,246,0.25);}
+.btn-lg{padding:0.85rem 1.75rem;font-size:0.95rem;}
+.btn-row{display:flex;gap:0.75rem;flex-wrap:wrap;margin-top:1.25rem;}
+.result-table-wrap{overflow-x:auto;margin-top:0.75rem;}
+table.res{width:100%;border-collapse:collapse;font-size:0.82rem;}
+table.res th{
+  background:var(--surface2);color:var(--gold-light);
+  font-family:'IBM Plex Mono',monospace;font-size:0.68rem;
+  text-transform:uppercase;letter-spacing:0.06em;
+  padding:0.7rem 0.9rem;text-align:left;border-bottom:2px solid var(--border);white-space:nowrap;
+}
+table.res td{
+  padding:0.65rem 0.9rem;border-bottom:1px solid var(--border);
+  vertical-align:top;line-height:1.45;
+}
+table.res tr.total-row td{
+  background:rgba(201,169,110,0.1);font-weight:700;color:var(--gold-light);
+  border-top:2px solid rgba(201,169,110,0.4);border-bottom:none;
+}
+table.res tr:not(.total-row):hover td{background:rgba(255,255,255,0.02);}
+.val{font-family:'IBM Plex Mono',monospace;text-align:right;white-space:nowrap;color:var(--gold-light);}
+table.esaj th{color:var(--blue);}
+table.esaj td.proc{font-family:'IBM Plex Mono',monospace;font-size:0.75rem;color:var(--blue);}
+.badge{display:inline-block;padding:0.18rem 0.55rem;border-radius:20px;font-size:0.65rem;font-weight:600;letter-spacing:0.03em;white-space:nowrap;}
+.b-green{background:var(--green-dim);color:var(--green);border:1px solid rgba(62,207,142,0.25);}
+.b-gold{background:var(--gold-dim);color:var(--gold-light);border:1px solid rgba(201,169,110,0.25);}
+.b-blue{background:var(--blue-dim);color:var(--blue);border:1px solid rgba(91,156,246,0.25);}
+.b-red{background:var(--red-dim);color:var(--red);border:1px solid rgba(242,105,105,0.25);}
+.info-box{background:var(--blue-dim);border:1px solid rgba(91,156,246,0.2);border-radius:10px;padding:0.85rem 1rem;font-size:0.79rem;color:var(--text-dim);line-height:1.55;}
+.warn-box{background:rgba(255,200,0,0.07);border:1px solid rgba(255,200,0,0.25);border-radius:10px;padding:0.85rem 1rem;font-size:0.8rem;color:#e5c619;line-height:1.5;}
+.error-box{background:var(--red-dim);border:1px solid rgba(242,105,105,0.3);border-radius:10px;padding:1rem;color:var(--red);font-size:0.85rem;line-height:1.5;white-space:pre-wrap;}
+.hidden{display:none!important;}
+a.esaj-link{color:var(--blue);font-size:0.78rem;text-decoration:none;}
+a.esaj-link:hover{text-decoration:underline;}
+.report-meta{display:grid;grid-template-columns:1fr 1fr;gap:0.6rem;margin-bottom:1rem;}
+@media(max-width:620px){.report-meta{grid-template-columns:1fr;}}
+.meta-item{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:0.65rem 0.9rem;}
+.meta-label{font-size:0.65rem;text-transform:uppercase;letter-spacing:0.07em;color:var(--text-muted);font-family:'IBM Plex Mono',monospace;margin-bottom:0.25rem;}
+.meta-val{font-size:0.9rem;color:var(--text);}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">⚖️</div>
+    <div class="logo-text">
+      <h1>Classificação de Crédito Público</h1>
+      <span>Falência &amp; Recuperação Judicial — Lei 11.101/2005</span>
+    </div>
+  </div>
+  <a href="index.html" class="back-btn">← Painel</a>
+</header>
+
+<main>
+
+  <!-- ── CONFIGURAÇÃO ── -->
+  <div class="section-card" id="configCard">
+    <div class="section-title">⚙️ Configuração do Caso</div>
+    <div class="form-grid" style="margin-bottom:1rem">
+      <div class="form-group" style="grid-column:1/-1">
+        <label class="form-label">Chave de API Anthropic (Claude) *</label>
+        <div class="api-wrap">
+          <input class="form-input" type="password" id="apiKey" placeholder="sk-ant-api03-…" autocomplete="off">
+          <button class="api-toggle" onclick="toggleKey()" title="Mostrar/ocultar">👁</button>
+        </div>
+      </div>
+    </div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label class="form-label">Nome do Devedor *</label>
+        <input class="form-input" type="text" id="nomeDevedor" placeholder="Razão Social / Nome completo">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Data do Decreto de Quebra *</label>
+        <input class="form-input" type="date" id="dataQuebra">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Nº do Processo de Falência</label>
+        <input class="form-input" type="text" id="numProcesso" placeholder="0000000-00.0000.8.26.0000">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Administrador Judicial</label>
+        <input class="form-input" type="text" id="admJudicial" placeholder="Nome do Administrador Judicial">
+      </div>
+    </div>
+    <div class="info-box" style="margin-top:1rem">
+      🔒 A chave de API é utilizada diretamente no navegador e armazenada apenas localmente. Nunca é transmitida a servidores de terceiros além da API da Anthropic.
+    </div>
+  </div>
+
+  <!-- ── UPLOAD ── -->
+  <div class="section-card" id="uploadCard">
+    <div class="section-title">📎 Documentos</div>
+    <div class="upload-grid">
+      <div>
+        <div class="form-label" style="margin-bottom:0.5rem">PDF 1 — Planilha de Cálculos *</div>
+        <div class="upload-zone" id="zone1"
+          onclick="document.getElementById('file1').click()"
+          ondragover="onDrag(event,'zone1')"
+          ondragleave="offDrag('zone1')"
+          ondrop="onDrop(event,'zone1','file1')">
+          <input type="file" id="file1" accept=".pdf" style="display:none"
+            onchange="onFileSelected(this,'zone1','name1','lbl1','file1obj')">
+          <div class="upload-icon" id="icon1">📊</div>
+          <div class="upload-label" id="lbl1">Selecionar Planilha de Cálculos</div>
+          <div class="upload-sub">PDF com valores, principal, juros, multa etc.</div>
+          <div class="upload-name" id="name1"></div>
+        </div>
+      </div>
+      <div>
+        <div class="form-label" style="margin-bottom:0.5rem">PDF 2 — Relação de CDAs *</div>
+        <div class="upload-zone" id="zone2"
+          onclick="document.getElementById('file2').click()"
+          ondragover="onDrag(event,'zone2')"
+          ondragleave="offDrag('zone2')"
+          ondrop="onDrop(event,'zone2','file2')">
+          <input type="file" id="file2" accept=".pdf" style="display:none"
+            onchange="onFileSelected(this,'zone2','name2','lbl2','file2obj')">
+          <div class="upload-icon" id="icon2">📋</div>
+          <div class="upload-label" id="lbl2">Selecionar Relação de CDAs</div>
+          <div class="upload-sub">PDF com datas de referência e números de processo</div>
+          <div class="upload-name" id="name2"></div>
+        </div>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-gold btn-lg" id="btnProcess" onclick="processAll()">
+        ⚡ Analisar e Classificar
+      </button>
+    </div>
+  </div>
+
+  <!-- ── PROGRESSO ── -->
+  <div class="section-card hidden" id="progressCard">
+    <div class="section-title">⏳ Processando</div>
+    <div class="progress-steps">
+      <div class="progress-step">
+        <div class="step-dot wait" id="dot1">1</div>
+        <div class="step-text">
+          <span class="step-label" id="slbl1">Extração de texto dos PDFs</span>
+          <span class="step-sub" id="ssub1">Leitura dos documentos via PDF.js</span>
+        </div>
+      </div>
+      <div class="progress-step">
+        <div class="step-dot wait" id="dot2">2</div>
+        <div class="step-text">
+          <span class="step-label" id="slbl2">Classificação dos créditos com IA</span>
+          <span class="step-sub" id="ssub2">Análise via Claude (pode levar 30–90 segundos)</span>
+        </div>
+      </div>
+      <div class="progress-step">
+        <div class="step-dot wait" id="dot3">3</div>
+        <div class="step-text">
+          <span class="step-label" id="slbl3">Consulta processual ESAJ/TJSP</span>
+          <span class="step-sub" id="ssub3">Andamento das execuções fiscais</span>
+        </div>
+      </div>
+      <div class="progress-step">
+        <div class="step-dot wait" id="dot4">4</div>
+        <div class="step-text">
+          <span class="step-label" id="slbl4">Preparação do relatório</span>
+          <span class="step-sub" id="ssub4">Consolidação dos resultados</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── RESULTADO: CLASSIFICAÇÃO ── -->
+  <div class="section-card hidden" id="resultCard">
+    <div class="section-title">📊 Classificação dos Créditos — Lei 11.101/2005</div>
+    <div id="classDiv"></div>
+  </div>
+
+  <!-- ── RESULTADO: ESAJ ── -->
+  <div class="section-card hidden" id="esajCard">
+    <div class="section-title">🔍 Andamento das Execuções Fiscais (ESAJ/TJSP)</div>
+    <div id="esajDiv"></div>
+  </div>
+
+  <!-- ── RELATÓRIO ── -->
+  <div class="section-card hidden" id="reportCard">
+    <div class="section-title">📄 Relatório ao Administrador Judicial</div>
+    <div class="report-meta" id="reportMeta"></div>
+    <div class="btn-row">
+      <button class="btn btn-gold btn-lg" onclick="downloadReport()">⬇️ Baixar Relatório em PDF</button>
+      <button class="btn btn-ghost" onclick="resetAll()">🔄 Nova Análise</button>
+    </div>
+  </div>
+
+</main>
+
+<script>
+// ── PDF.js ────────────────────────────────────────────────────────────────────
+pdfjsLib.GlobalWorkerOptions.workerSrc =
+  'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+// ── Estado global ─────────────────────────────────────────────────────────────
+let gFile1 = null, gFile2 = null;
+let gClassText = '';
+let gParsedTable = [];
+let gEsajData = [];
+
+// ── Persistência ──────────────────────────────────────────────────────────────
+window.addEventListener('load', () => {
+  try {
+    const c = JSON.parse(localStorage.getItem('frj_cls_cfg') || '{}');
+    if (c.k) document.getElementById('apiKey').value = c.k;
+    if (c.adm) document.getElementById('admJudicial').value = c.adm;
+  } catch {}
+});
+
+function saveConfig() {
+  const c = { k: document.getElementById('apiKey').value, adm: document.getElementById('admJudicial').value };
+  localStorage.setItem('frj_cls_cfg', JSON.stringify(c));
+}
+
+function toggleKey() {
+  const i = document.getElementById('apiKey');
+  i.type = i.type === 'password' ? 'text' : 'password';
+}
+
+// ── Upload ─────────────────────────────────────────────────────────────────────
+function onFileSelected(inp, zoneId, nameId, lblId, varName) {
+  const f = inp.files[0];
+  if (!f) return;
+  if (zoneId === 'zone1') gFile1 = f; else gFile2 = f;
+  document.getElementById(zoneId).classList.add('loaded');
+  document.getElementById(nameId).textContent = f.name;
+  document.getElementById(lblId).textContent = zoneId === 'zone1' ? '✅ Cálculos carregados' : '✅ CDAs carregadas';
+}
+
+function onDrag(e, z) { e.preventDefault(); document.getElementById(z).classList.add('drag'); }
+function offDrag(z) { document.getElementById(z).classList.remove('drag'); }
+function onDrop(e, z, fId) {
+  e.preventDefault(); offDrag(z);
+  const f = e.dataTransfer?.files?.[0];
+  if (!f || !f.name.toLowerCase().endsWith('.pdf')) return;
+  const dt = new DataTransfer(); dt.items.add(f);
+  const inp = document.getElementById(fId);
+  inp.files = dt.files;
+  inp.dispatchEvent(new Event('change'));
+}
+
+// ── Progresso UI ──────────────────────────────────────────────────────────────
+function show(id) { document.getElementById(id).classList.remove('hidden'); }
+function hide(id) { document.getElementById(id).classList.add('hidden'); }
+
+function stepSet(n, state, sub) {
+  const dot = document.getElementById('dot' + n);
+  const lbl = document.getElementById('slbl' + n);
+  const ssub = document.getElementById('ssub' + n);
+  const map = {
+    run: ['run', 'active', '⏳'],
+    done: ['done', 'done', '✓'],
+    err: ['err', 'err', '✕'],
+    wait: ['wait', '', String(n)]
+  };
+  const [dc, lc, dt] = map[state] || map.wait;
+  dot.className = 'step-dot ' + dc;
+  dot.textContent = dt;
+  lbl.className = 'step-label ' + lc;
+  if (sub && ssub) ssub.textContent = sub;
+}
+
+// ── Extração de texto PDF ─────────────────────────────────────────────────────
+async function extractPdfText(file) {
+  const ab = await file.arrayBuffer();
+  const pdf = await pdfjsLib.getDocument({ data: ab }).promise;
+  let out = '';
+  for (let i = 1; i <= pdf.numPages; i++) {
+    const page = await pdf.getPage(i);
+    const content = await page.getTextContent();
+    const line = content.items.map(it => it.str).join(' ');
+    out += `[Pág ${i}] ${line}\n`;
+  }
+  return out;
+}
+
+// ── Claude API ────────────────────────────────────────────────────────────────
+async function callClaude(calcText, cdaText, apiKey, info) {
+  const dtFmt = info.dataQuebra
+    ? new Date(info.dataQuebra + 'T12:00').toLocaleDateString('pt-BR')
+    : '(não informada)';
+
+  const prompt = `Você é especialista em direito falimentar brasileiro. Analise os documentos abaixo e classifique todos os créditos públicos conforme a Lei 11.101/2005.
+
+DADOS DO CASO
+- Devedor: ${info.nomeDevedor}
+- Data do Decreto de Quebra: ${dtFmt} (${info.dataQuebra})
+- Processo de Falência: ${info.numProcesso || 'não informado'}
+
+━━━ METODOLOGIA DE APURAÇÃO (OBRIGATÓRIA) ━━━
+
+Para cada item do PDF 1:
+1. Identifique a natureza do crédito (ICMS próprio, ICMS-ST, Taxa Judiciária, Honorários, IRPJ, CSLL, PIS, COFINS, INSS, outros).
+2. Localize no PDF 2 a data de referência correspondente da CDA.
+3. Verifique se essa data é ANTERIOR ou POSTERIOR à quebra (${dtFmt}).
+4. Separe os componentes: principal · correção monetária · juros · multa · juros de multa · honorários.
+5. Enquadre cada componente na subclasse correta.
+6. Some tudo por subclasse.
+7. Confira o total das subclasses com o total global do PDF 1.
+
+━━━ REGRAS ESPECIAIS ━━━
+
+• ICMS Substituição Tributária (ICMS-ST): SEMPRE → EXTRACONCURSAL - RESTITUIÇÃO.
+  Fundamento: art. 84, caput, Lei 11.101/2005 c/c jurisprudência do STJ (REsp 1.836.789/SP e outros).
+  O valor a ser classificado como restituível é o crédito líquido reconhecido, conforme apurado no PDF 1.
+
+• Extraconcursal: créditos cujo fato gerador ou vencimento é POSTERIOR à data da quebra.
+• Concursal: créditos cujo fato gerador ou vencimento é ANTERIOR à data da quebra.
+
+━━━ CONFERÊNCIA FINAL (OBRIGATÓRIA) ━━━
+
+- Some todas as subclasses.
+- Compare com o valor total final do PDF 1.
+- Se houver QUALQUER diferença, refaça a classificação até zerar a divergência.
+- Só entregue a resposta quando o total das subclasses for EXATAMENTE IGUAL ao total do PDF 1.
+
+━━━ FORMATO DE SAÍDA (ÚNICO PERMITIDO) ━━━
+
+Entregue SOMENTE a tabela markdown abaixo. Sem texto antes, sem texto depois, sem comentários.
+Linhas com valor zero (R$ 0,00) devem ser omitidas.
+
+| Classe | Base Legal | Critério de Composição | Valor (R$) |
+|--------|------------|------------------------|------------|
+| EXTRACONCURSAL - RESTITUIÇÃO | Art. 84, Lei 11.101/2005 | ICMS-ST Restituição — sempre extraconcursal | ... |
+| EXTRACONCURSAL - TRABALHISTA | Art. 84, Lei 11.101/2005 | Honorários posteriores à quebra, sem limitação | ... |
+| EXTRACONCURSAL - TAXA JUDICIÁRIA | Art. 84, Lei 11.101/2005 | Taxa Judiciária posterior à quebra | ... |
+| EXTRACONCURSAL - FATOS GERADORES POSTERIORES À QUEBRA | Art. 84, Lei 11.101/2005 | Créditos tributários posteriores à quebra: principal + correção + juros | ... |
+| CONCURSAL - TRABALHISTA | Art. 83, I, Lei 11.101/2005 | Honorários anteriores à quebra até 150 salários mínimos | ... |
+| CONCURSAL - TRIBUTÁRIO | Art. 83, III, Lei 11.101/2005 | Créditos tributários anteriores à quebra: principal + correção + juros (sem multa) | ... |
+| CONCURSAL - QUIROGRAFÁRIO | Art. 83, VI, Lei 11.101/2005 | Excedente de honorários anteriores à quebra acima de 150 salários mínimos | ... |
+| CONCURSAL - SUBQUIROGRAFÁRIO | Art. 83, VII, Lei 11.101/2005 | Multas punitivas/moratórias, juros de multa, créditos não tributários sem honorários | ... |
+| TOTAL | — | Deve ser idêntico ao total do PDF 1 | ... |
+
+━━━ REGRAS FINAIS ━━━
+
+- Não escrever explicações nem introdução.
+- Não listar CDAs individualmente.
+- Não mostrar memória de cálculo.
+- Não estimar nem arredondar valores.
+- Nunca substituir valores do PDF 1 por valores do PDF 2.
+- O PDF 2 serve SOMENTE para extrair a referência temporal (data) de cada CDA.
+- Se faltar informação essencial para fechar a soma com exatidão, responder APENAS:
+  ERRO: INFORMAÇÕES INSUFICIENTES PARA CLASSIFICAÇÃO
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+PDF 1 — PLANILHA DE CÁLCULOS:
+${calcText}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+PDF 2 — RELAÇÃO DE CDAs:
+${cdaText}`;
+
+  const resp = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-calls': 'true'
+    },
+    body: JSON.stringify({
+      model: 'claude-opus-4-8',
+      max_tokens: 8192,
+      messages: [{ role: 'user', content: prompt }]
+    })
+  });
+
+  if (!resp.ok) {
+    const err = await resp.json().catch(() => ({}));
+    throw new Error('Claude API: ' + (err.error?.message || resp.status));
+  }
+  const data = await resp.json();
+  return data.content[0].text.trim();
+}
+
+// ── ESAJ / Processos ──────────────────────────────────────────────────────────
+function extractCNJ(text) {
+  const re = /\d{7}-\d{2}\.\d{4}\.[0-9]\.\d{2}\.\d{4}/g;
+  return [...new Set(text.match(re) || [])];
+}
+
+function esajUrl(num) {
+  const foro = parseInt((num.match(/\.(\d{4})$/) || [])[1] || '0');
+  return `https://esaj.tjsp.jus.br/cpopg/show.do?processo.numero=${encodeURIComponent(num)}&processo.foro=${foro}`;
+}
+
+async function proxyFetch(url) {
+  for (const px of [
+    `https://corsproxy.io/?${encodeURIComponent(url)}`,
+    `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`
+  ]) {
+    try {
+      const r = await fetch(px, { signal: AbortSignal.timeout(14000) });
+      if (r.ok) return await r.text();
+    } catch {}
+  }
+  return null;
+}
+
+function parseEsajPage(html) {
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  const bodyTxt = (doc.body?.innerText || doc.body?.textContent || '').toLowerCase();
+
+  if (!bodyTxt || bodyTxt.length < 100) return null;
+  if (bodyTxt.includes('processo não encontrado') || bodyTxt.includes('não localizado')) {
+    return { status: 'Não encontrado', statusCls: 'b-red', last: '' };
+  }
+
+  // Extract last movements
+  const movRows = doc.querySelectorAll(
+    '#tabelaTodasMovimentacoes tr, tr.fundoClaro, tr.fundoEscuro, .movimentacaoLinhaImpar, .movimentacaoLinhaPar'
+  );
+  const movs = [];
+  movRows.forEach(tr => {
+    const tds = tr.querySelectorAll('td');
+    if (tds.length < 2) return;
+    const dt = tds[0]?.textContent?.trim();
+    const desc = (tds[tds.length - 1]?.textContent || '').replace(/\s+/g, ' ').trim();
+    if (dt && desc && /\d{2}\/\d{2}\/\d{4}/.test(dt)) movs.push({ dt, desc });
+  });
+
+  let status = 'Ativo';
+  let statusCls = 'b-blue';
+  if (bodyTxt.includes('extint') || bodyTxt.includes('extinção')) { status = 'Extinto'; statusCls = 'b-green'; }
+  else if (bodyTxt.includes('suspens')) { status = 'Suspenso'; statusCls = 'b-gold'; }
+  else if (bodyTxt.includes('arquivad')) { status = 'Arquivado'; statusCls = 'b-blue'; }
+  else if (bodyTxt.includes('remessa')) { status = 'Remetido'; statusCls = 'b-blue'; }
+
+  const last = movs[0] ? `${movs[0].dt} — ${movs[0].desc.slice(0, 130)}` : '';
+  return { status, statusCls, last, movsCount: movs.length };
+}
+
+async function queryEsaj(cdaText) {
+  const nums = extractCNJ(cdaText);
+  if (!nums.length) return [];
+  const results = [];
+  for (const num of nums) {
+    const url = esajUrl(num);
+    const html = await proxyFetch(url);
+    if (html) {
+      const parsed = parseEsajPage(html) || { status: 'Indisponível', statusCls: 'b-gold', last: 'Resposta inesperada do ESAJ' };
+      results.push({ num, url, ...parsed, proxyOk: true });
+    } else {
+      results.push({ num, url, status: 'Consulta manual', statusCls: 'b-gold', last: '', proxyOk: false });
+    }
+  }
+  return results;
+}
+
+// ── Parse tabela markdown ─────────────────────────────────────────────────────
+function parseMdTable(md) {
+  const rows = [];
+  for (const line of md.split('\n')) {
+    if (!line.includes('|')) continue;
+    if (/^\|[\s\-:]+\|/.test(line.trim())) continue;
+    const cells = line.split('|').map(c => c.trim()).filter((_, i, a) => i > 0 && i < a.length - 1);
+    if (cells.length >= 2) rows.push(cells);
+  }
+  return rows;
+}
+
+// ── Render resultados ─────────────────────────────────────────────────────────
+function renderClassification(text) {
+  const el = document.getElementById('classDiv');
+
+  if (text.startsWith('ERRO:')) {
+    el.innerHTML = `<div class="error-box">⚠️ ${text}</div>`;
+    return;
+  }
+
+  gParsedTable = parseMdTable(text);
+  if (!gParsedTable.length) {
+    el.innerHTML = `<div class="warn-box">A IA retornou um formato inesperado. Resposta bruta:<br><pre style="margin-top:0.5rem;font-size:0.72rem;overflow-x:auto;white-space:pre-wrap">${escHtml(text)}</pre></div>`;
+    return;
+  }
+
+  const [header, ...rows] = gParsedTable;
+  const lastIdx = rows.length - 1;
+
+  let html = `<div class="result-table-wrap"><table class="res"><thead><tr>`;
+  html += header.map(h => `<th>${escHtml(h)}</th>`).join('');
+  html += `</tr></thead><tbody>`;
+
+  rows.forEach((row, ri) => {
+    const isTotal = row[0]?.toUpperCase().includes('TOTAL');
+    html += `<tr class="${isTotal ? 'total-row' : ''}">`;
+    row.forEach((cell, ci) => {
+      const isVal = ci === row.length - 1;
+      html += `<td class="${isVal ? 'val' : ''}">${escHtml(cell)}</td>`;
+    });
+    html += '</tr>';
+  });
+
+  html += '</tbody></table></div>';
+  el.innerHTML = html;
+}
+
+function renderEsaj(data) {
+  const el = document.getElementById('esajDiv');
+  if (!data.length) {
+    el.innerHTML = '<div class="info-box">Nenhum número de processo CNJ (formato NNNNNNN-DD.AAAA.J.TT.OOOO) encontrado no PDF de CDAs.</div>';
+    return;
+  }
+
+  let html = `<div class="result-table-wrap"><table class="res esaj">
+    <thead><tr><th>Nº do Processo</th><th>Status</th><th>Última Movimentação</th><th>ESAJ</th></tr></thead><tbody>`;
+
+  for (const r of data) {
+    html += `<tr>
+      <td class="proc">${escHtml(r.num)}</td>
+      <td><span class="badge ${r.statusCls}">${escHtml(r.status)}</span></td>
+      <td style="font-size:0.78rem;max-width:280px;line-height:1.4">${escHtml(r.last || (r.proxyOk ? '—' : 'Acesso manual necessário'))}</td>
+      <td><a class="esaj-link" href="${escHtml(r.url)}" target="_blank" rel="noopener">🔗 Abrir</a></td>
+    </tr>`;
+  }
+
+  html += '</tbody></table></div>';
+
+  if (data.some(r => !r.proxyOk)) {
+    html += `<div class="warn-box" style="margin-top:0.85rem">
+      ⚠️ Alguns processos não puderam ser consultados automaticamente (CORS/proxy). Use o link "Abrir" para consulta direta no ESAJ TJSP. O relatório em PDF incluirá links clicáveis.
+    </div>`;
+  }
+
+  el.innerHTML = html;
+}
+
+function escHtml(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── Fluxo principal ───────────────────────────────────────────────────────────
+async function processAll() {
+  const apiKey = document.getElementById('apiKey').value.trim();
+  const nomeDevedor = document.getElementById('nomeDevedor').value.trim();
+  const dataQuebra = document.getElementById('dataQuebra').value;
+
+  if (!apiKey) { alert('Informe a Chave de API Anthropic.'); return; }
+  if (!nomeDevedor) { alert('Informe o Nome do Devedor.'); return; }
+  if (!dataQuebra) { alert('Informe a Data do Decreto de Quebra.'); return; }
+  if (!gFile1) { alert('Selecione o PDF 1 — Planilha de Cálculos.'); return; }
+  if (!gFile2) { alert('Selecione o PDF 2 — Relação de CDAs.'); return; }
+
+  saveConfig();
+
+  const info = {
+    nomeDevedor,
+    dataQuebra,
+    numProcesso: document.getElementById('numProcesso').value.trim(),
+    admJudicial: document.getElementById('admJudicial').value.trim()
+  };
+
+  document.getElementById('btnProcess').disabled = true;
+  show('progressCard');
+  ['resultCard','esajCard','reportCard'].forEach(hide);
+
+  let calcText = '', cdaText = '';
+
+  try {
+    // Passo 1
+    stepSet(1, 'run');
+    [calcText, cdaText] = await Promise.all([extractPdfText(gFile1), extractPdfText(gFile2)]);
+    stepSet(1, 'done', `${gFile1.name} + ${gFile2.name}`);
+
+    // Passo 2
+    stepSet(2, 'run', 'Aguarde — análise completa pode levar 1–2 minutos');
+    gClassText = await callClaude(calcText, cdaText, apiKey, info);
+    stepSet(2, 'done');
+    renderClassification(gClassText);
+    show('resultCard');
+
+    // Passo 3
+    stepSet(3, 'run');
+    gEsajData = await queryEsaj(cdaText);
+    const found = gEsajData.filter(r => r.proxyOk).length;
+    stepSet(3, 'done', `${gEsajData.length} processo(s) identificado(s), ${found} consultado(s) automaticamente`);
+    renderEsaj(gEsajData);
+    show('esajCard');
+
+    // Passo 4
+    stepSet(4, 'run');
+    const dtFmt = new Date(dataQuebra + 'T12:00').toLocaleDateString('pt-BR');
+    document.getElementById('reportMeta').innerHTML = `
+      <div class="meta-item"><div class="meta-label">Devedor</div><div class="meta-val">${escHtml(nomeDevedor)}</div></div>
+      <div class="meta-item"><div class="meta-label">Data da Quebra</div><div class="meta-val">${dtFmt}</div></div>
+      <div class="meta-item"><div class="meta-label">Processo de Falência</div><div class="meta-val">${escHtml(info.numProcesso || '—')}</div></div>
+      <div class="meta-item"><div class="meta-label">Administrador Judicial</div><div class="meta-val">${escHtml(info.admJudicial || '—')}</div></div>`;
+    stepSet(4, 'done');
+    show('reportCard');
+
+  } catch (err) {
+    console.error(err);
+    for (let n = 1; n <= 4; n++) {
+      if (document.getElementById('dot' + n).classList.contains('run')) {
+        stepSet(n, 'err', err.message);
+        break;
+      }
+    }
+    show('resultCard');
+    document.getElementById('classDiv').innerHTML =
+      `<div class="error-box">Erro: ${escHtml(err.message)}\n\nVerifique:\n• Chave de API válida\n• Conexão com internet\n• Tamanho dos PDFs (muito grande pode exceder o contexto)</div>`;
+  } finally {
+    document.getElementById('btnProcess').disabled = false;
+  }
+}
+
+// ── Geração do relatório PDF ──────────────────────────────────────────────────
+function downloadReport() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  const W = 210, M = 18;
+  const today = new Date().toLocaleDateString('pt-BR');
+
+  const info = {
+    nomeDevedor: document.getElementById('nomeDevedor').value.trim(),
+    dataQuebra: document.getElementById('dataQuebra').value,
+    numProcesso: document.getElementById('numProcesso').value.trim(),
+    admJudicial: document.getElementById('admJudicial').value.trim()
+  };
+  const dtFmt = info.dataQuebra
+    ? new Date(info.dataQuebra + 'T12:00').toLocaleDateString('pt-BR') : '—';
+
+  function footerPage(n) {
+    const total = doc.internal.getNumberOfPages();
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(7);
+    doc.setTextColor(150, 150, 160);
+    doc.text(`Página ${n}`, W - M, 290, { align: 'right' });
+    doc.text('Núcleo de Falência e Recuperação Judicial — Classificação de Créditos Públicos', M, 290);
+    doc.setDrawColor(200, 200, 210);
+    doc.line(M, 287, W - M, 287);
+  }
+
+  // ── Capa ──
+  doc.setFillColor(245, 245, 248);
+  doc.rect(0, 0, W, 297, 'F');
+
+  doc.setFillColor(13, 15, 20);
+  doc.rect(0, 0, W, 80, 'F');
+
+  doc.setFillColor(201, 169, 110);
+  doc.rect(M, 78, 80, 2, 'F');
+
+  doc.setTextColor(232, 201, 138);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(18);
+  doc.text('RELATÓRIO DE CLASSIFICAÇÃO', M, 30);
+  doc.text('DE CRÉDITOS PÚBLICOS', M, 40);
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(180, 185, 200);
+  doc.text('Falência e Recuperação Judicial — Lei 11.101/2005', M, 50);
+  doc.text('Arts. 83 e 84 — Créditos Extraconcursais e Concursais', M, 57);
+
+  // Caixa de dados
+  doc.setFillColor(255, 255, 255);
+  doc.setDrawColor(220, 220, 230);
+  doc.roundedRect(M, 95, W - 2 * M, 85, 3, 3, 'FD');
+
+  const fields = [
+    ['DEVEDOR', info.nomeDevedor || '—', true],
+    ['DATA DO DECRETO DE QUEBRA', dtFmt, false],
+    ['PROCESSO DE FALÊNCIA', info.numProcesso || '—', false],
+    ['ADMINISTRADOR JUDICIAL', info.admJudicial || '—', false],
+    ['DATA DESTE RELATÓRIO', today, false]
+  ];
+
+  let fy = 105;
+  fields.forEach(([label, val, big]) => {
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(7);
+    doc.setTextColor(120, 120, 135);
+    doc.text(label, M + 8, fy);
+    doc.setFont('helvetica', big ? 'bold' : 'normal');
+    doc.setFontSize(big ? 12 : 9.5);
+    doc.setTextColor(20, 20, 35);
+    doc.text(val, M + 8, fy + 5);
+    fy += big ? 16 : 14;
+  });
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(7.5);
+  doc.setTextColor(120, 120, 135);
+  doc.text('Gerado automaticamente · ' + today, M, 285);
+
+  // ── Pág 2: Classificação ──
+  doc.addPage();
+  doc.setFillColor(245, 245, 248);
+  doc.rect(0, 0, W, 297, 'F');
+
+  doc.setFillColor(13, 15, 20);
+  doc.rect(0, 0, W, 22, 'F');
+  doc.setTextColor(232, 201, 138);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(12);
+  doc.text('1. CLASSIFICAÇÃO DOS CRÉDITOS', M, 14);
+  doc.setFontSize(7.5);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(180, 185, 200);
+  doc.text(`${info.nomeDevedor} | Quebra: ${dtFmt}`, M, 20);
+
+  if (gParsedTable.length > 1) {
+    const [hdr, ...body] = gParsedTable;
+    const lastRow = body.length - 1;
+    doc.autoTable({
+      startY: 28,
+      head: [hdr],
+      body: body,
+      margin: { left: M, right: M },
+      styles: { font: 'helvetica', fontSize: 7.5, cellPadding: 3.5, overflow: 'linebreak', lineColor: [210, 212, 220], lineWidth: 0.2 },
+      headStyles: { fillColor: [25, 30, 50], textColor: [232, 201, 138], fontStyle: 'bold', fontSize: 7, halign: 'center' },
+      columnStyles: {
+        0: { cellWidth: 55, textColor: [20, 20, 35], fontStyle: 'bold' },
+        1: { cellWidth: 32, textColor: [80, 80, 100], fontSize: 7 },
+        2: { cellWidth: 'auto', textColor: [50, 50, 65] },
+        3: { cellWidth: 26, halign: 'right', textColor: [100, 70, 10], fontStyle: 'bold' }
+      },
+      alternateRowStyles: { fillColor: [250, 250, 252] },
+      bodyStyles: { fillColor: [255, 255, 255] },
+      didParseCell: (d) => {
+        if (d.section === 'body' && d.row.index === lastRow) {
+          d.cell.styles.fillColor = [250, 244, 225];
+          d.cell.styles.textColor = [100, 65, 0];
+          d.cell.styles.fontStyle = 'bold';
+          d.cell.styles.fontSize = 8;
+        }
+      },
+      didDrawPage: (d) => { footerPage(d.pageNumber + 1); }
+    });
+  } else {
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.setTextColor(20, 20, 35);
+    doc.text(gClassText || 'Classificação não disponível.', M, 33, { maxWidth: W - 2 * M, lineHeightFactor: 1.5 });
+    footerPage(2);
+  }
+
+  // ── Pág ESAJ ──
+  if (gEsajData.length) {
+    doc.addPage();
+    doc.setFillColor(245, 245, 248);
+    doc.rect(0, 0, W, 297, 'F');
+    doc.setFillColor(13, 15, 20);
+    doc.rect(0, 0, W, 22, 'F');
+    doc.setTextColor(91, 156, 246);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(12);
+    doc.text('2. ANDAMENTO DAS EXECUÇÕES FISCAIS', M, 14);
+    doc.setFontSize(7.5);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(180, 185, 200);
+    doc.text('Sistema ESAJ — Tribunal de Justiça do Estado de São Paulo (TJSP)', M, 20);
+
+    const esajBody = gEsajData.map(r => [r.num, r.status, r.last || '—', r.url]);
+    const pgBase = doc.internal.getNumberOfPages();
+    doc.autoTable({
+      startY: 28,
+      head: [['Nº do Processo', 'Status', 'Última Movimentação', 'Link ESAJ']],
+      body: esajBody,
+      margin: { left: M, right: M },
+      styles: { font: 'helvetica', fontSize: 7.5, cellPadding: 3.5, overflow: 'linebreak', lineColor: [210, 212, 220], lineWidth: 0.2 },
+      headStyles: { fillColor: [10, 20, 50], textColor: [91, 156, 246], fontStyle: 'bold', fontSize: 7 },
+      columnStyles: {
+        0: { cellWidth: 52, textColor: [20, 60, 140], fontStyle: 'bold', fontSize: 7 },
+        1: { cellWidth: 22, halign: 'center', textColor: [30, 30, 50] },
+        2: { cellWidth: 'auto', textColor: [50, 50, 65], fontSize: 7 },
+        3: { cellWidth: 28, textColor: [20, 60, 200], fontSize: 6.5 }
+      },
+      alternateRowStyles: { fillColor: [250, 250, 252] },
+      bodyStyles: { fillColor: [255, 255, 255] },
+      didDrawPage: (d) => { footerPage(pgBase + d.pageNumber - 1); }
+    });
+  }
+
+  // ── Conclusões ──
+  doc.addPage();
+  doc.setFillColor(245, 245, 248);
+  doc.rect(0, 0, W, 297, 'F');
+  doc.setFillColor(13, 15, 20);
+  doc.rect(0, 0, W, 22, 'F');
+  doc.setTextColor(62, 207, 142);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(12);
+  doc.text('3. CONCLUSÕES', M, 14);
+  doc.setFontSize(7.5);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(180, 185, 200);
+  doc.text('Síntese analítica para o Administrador Judicial', M, 20);
+
+  const sus = gEsajData.filter(r => r.status?.toLowerCase().includes('suspenso')).length;
+  const ext = gEsajData.filter(r => r.status?.toLowerCase().includes('extint') || r.status?.toLowerCase().includes('arquivad')).length;
+  const ativ = gEsajData.filter(r => r.status?.toLowerCase().includes('ativo')).length;
+  const outros = gEsajData.length - sus - ext - ativ;
+
+  const conclusao = [
+    `O presente relatório apresenta a classificação dos créditos públicos inscritos em dívida ativa`,
+    `em face do devedor ${info.nomeDevedor}, cujo decreto de falência data de ${dtFmt},`,
+    `processo nº ${info.numProcesso || 'não informado'}.`,
+    '',
+    `A classificação foi realizada com fundamento nos arts. 83 e 84 da Lei 11.101/2005,`,
+    `distinguindo-se os créditos extraconcursais — cujos fatos geradores ou vencimentos`,
+    `são posteriores à data do decreto falimentar — dos créditos concursais, classificados`,
+    `conforme a ordem de preferência legal.`,
+    '',
+    `Os créditos relativos a ICMS Substituição Tributária (ICMS-ST) foram classificados`,
+    `como extraconcursais restituíveis, nos termos do art. 84 da Lei 11.101/2005, com`,
+    `fundamento na jurisprudência consolidada do Superior Tribunal de Justiça, que reconhece`,
+    `a natureza não concursal dos valores recolhidos a título de ICMS-ST pelo contribuinte`,
+    `substituído em favor do Fisco, haja vista sua condição de depositário.`,
+    '',
+    ...(gEsajData.length ? [
+      `No tocante ao andamento processual, foram identificados ${gEsajData.length} processo(s) de`,
+      `execução fiscal no sistema ESAJ/TJSP, com a seguinte situação:`,
+      `  • Suspensos (por força da falência): ${sus}`,
+      `  • Extintos / Arquivados: ${ext}`,
+      `  • Ativos: ${ativ}`,
+      `  • Status a verificar: ${outros}`,
+      '',
+      `Nos termos do art. 6º, § 7º-B da Lei 11.101/2005, as execuções fiscais ajuizadas`,
+      `anteriormente à decretação da falência devem ser suspensas para fins de habilitação`,
+      `dos respectivos créditos no processo falimentar, salvo determinação judicial em contrário.`,
+      '',
+    ] : []),
+    `O relatório está à disposição do MM. Juízo, do Ministério Público, da Fazenda Pública`,
+    `e de todas as partes interessadas para os fins de habilitação, impugnação ou informação.`
+  ].join('\n');
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(9.5);
+  doc.setTextColor(20, 20, 35);
+  doc.text(conclusao, M, 30, { maxWidth: W - 2 * M, lineHeightFactor: 1.6 });
+
+  // Assinatura
+  const sigY = 235;
+  doc.setDrawColor(150, 150, 160);
+  doc.line(M, sigY, M + 80, sigY);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(9);
+  doc.setTextColor(20, 20, 35);
+  doc.text(info.admJudicial || 'Administrador Judicial', M, sigY + 5);
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8);
+  doc.setTextColor(100, 100, 115);
+  doc.text('Administrador Judicial', M, sigY + 10);
+  doc.text('Processo nº ' + (info.numProcesso || '—'), M, sigY + 16);
+  doc.text('São Paulo, ' + today, M, sigY + 22);
+
+  footerPage(doc.internal.getNumberOfPages());
+
+  const fname = `relatorio-creditos-${(info.nomeDevedor || 'devedor').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')}-${today.replace(/\//g, '-')}.pdf`;
+  doc.save(fname);
+}
+
+// ── Reset ──────────────────────────────────────────────────────────────────────
+function resetAll() {
+  gFile1 = null; gFile2 = null;
+  gClassText = ''; gParsedTable = []; gEsajData = [];
+  ['file1', 'file2'].forEach(id => document.getElementById(id).value = '');
+  ['zone1', 'zone2'].forEach(id => document.getElementById(id).classList.remove('loaded'));
+  document.getElementById('name1').textContent = '';
+  document.getElementById('name2').textContent = '';
+  document.getElementById('lbl1').textContent = 'Selecionar Planilha de Cálculos';
+  document.getElementById('lbl2').textContent = 'Selecionar Relação de CDAs';
+  for (let n = 1; n <= 4; n++) stepSet(n, 'wait');
+  ['progressCard', 'resultCard', 'esajCard', 'reportCard'].forEach(hide);
+  document.getElementById('btnProcess').disabled = false;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+</script>
+</body>
+</html>
