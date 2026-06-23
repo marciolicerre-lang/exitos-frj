@@ -27,6 +27,7 @@ from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 
 from models import CDA, CalculationReport, ESAJProcessInfo
+from credit_classifier import CreditClassification, classify_credits
 
 # ── Fonts ──────────────────────────────────────────────────────────────────────
 _FONT_DIR = "/usr/share/fonts/truetype/dejavu"
@@ -249,11 +250,131 @@ def _para(text: str, font=_SERIF, size=9.5, leading=14, align=TA_JUSTIFY,
     return Paragraph(text, style)
 
 
+_EXTRA_BG  = colors.HexColor("#FFF8EE")   # warm tint for extraconcursal rows
+_CONC_BG   = colors.HexColor("#EEF4FF")   # cool tint for concursal rows
+_GROUP_HDR = colors.HexColor("#344B6E")   # sub-header background
+
+
+def _build_credit_classification(classification: CreditClassification) -> List:
+    story = _section_title("1. Classificação do Crédito Público – Lei 11.101/2005")
+
+    story.append(_para(
+        "A tabela abaixo apresenta a classificação de todos os créditos fiscais constantes "
+        "da planilha de cálculo, segregados entre <b>créditos extraconcursais</b> "
+        "(fatos geradores posteriores ao decreto de falência – Art. 84 da Lei 11.101/2005) "
+        "e <b>créditos concursais</b> (fatos geradores anteriores à falência – Art. 83), "
+        "com as respectivas subclasses e valores atualizados.",
+        font=_SERIF, size=9.5,
+    ))
+    story.append(Spacer(1, 0.2 * cm))
+
+    col_w = [13.0 * cm, 3.8 * cm]
+
+    # Header row
+    h_style = ParagraphStyle("clh", fontName=_SANS_B, fontSize=8.5, textColor=_WHITE, alignment=TA_LEFT)
+    h_style_r = ParagraphStyle("clhr", fontName=_SANS_B, fontSize=8.5, textColor=_WHITE, alignment=TA_RIGHT)
+    rows = [[
+        Paragraph("CLASSE / NATUREZA DO CRÉDITO", h_style),
+        Paragraph("VALOR (R$)", h_style_r),
+    ]]
+
+    # Group sub-header style
+    gh = ParagraphStyle("gh", fontName=_SANS_B, fontSize=8.5, textColor=_WHITE, alignment=TA_LEFT)
+    # Cell styles
+    cs_l  = ParagraphStyle("csl",  fontName=_SANS,   fontSize=9,   alignment=TA_LEFT)
+    cs_r  = ParagraphStyle("csr",  fontName=_SANS,   fontSize=9,   alignment=TA_RIGHT)
+    cs_rb = ParagraphStyle("csrb", fontName=_SANS_B, fontSize=9.5, alignment=TA_RIGHT)
+    cs_lb = ParagraphStyle("cslb", fontName=_SANS_B, fontSize=9.5, alignment=TA_LEFT)
+
+    # EXTRACONCURSAL sub-header
+    rows.append([
+        Paragraph("EXTRACONCURSAL  –  Art. 84  (créditos posteriores à decretação da falência)", gh),
+        Paragraph("", gh),
+    ])
+
+    for label, value, _, is_extra in classification.rows():
+        if not is_extra:
+            continue
+        rows.append([
+            Paragraph(f"    {label}", cs_l),
+            Paragraph(_brl(value), cs_r),
+        ])
+
+    # CONCURSAL sub-header
+    rows.append([
+        Paragraph("CONCURSAL  –  Art. 83  (créditos anteriores à decretação da falência)", gh),
+        Paragraph("", gh),
+    ])
+
+    for label, value, _, is_extra in classification.rows():
+        if is_extra:
+            continue
+        rows.append([
+            Paragraph(f"    {label}", cs_l),
+            Paragraph(_brl(value), cs_r),
+        ])
+
+    # Total row
+    rows.append([
+        Paragraph("TOTAL GERAL", cs_lb),
+        Paragraph(_brl(classification.total), cs_rb),
+    ])
+
+    # Build table
+    tbl = Table(rows, colWidths=col_w)
+
+    # Dynamic style commands
+    n = len(rows)
+    extra_start = 2      # first extraconcursal data row index
+    extra_count = 4      # 4 extra rows
+    conc_hdr    = extra_start + extra_count   # index of concursal sub-header
+    conc_start  = conc_hdr + 1               # first concursal data row
+    conc_count  = 4                          # 4 concursal rows
+    total_row   = conc_start + conc_count    # last row (total)
+
+    cmds = [
+        # Overall grid
+        ("GRID",           (0, 0), (-1, -1), 0.4, _GRAY_MID),
+        ("VALIGN",         (0, 0), (-1, -1), "MIDDLE"),
+        ("TOPPADDING",     (0, 0), (-1, -1), 5),
+        ("BOTTOMPADDING",  (0, 0), (-1, -1), 5),
+        ("LEFTPADDING",    (0, 0), (-1, -1), 8),
+        ("RIGHTPADDING",   (0, 0), (-1, -1), 8),
+        # Main header
+        ("BACKGROUND",     (0, 0), (-1, 0),  _NAVY),
+        # Extraconcursal sub-header
+        ("BACKGROUND",     (0, 1), (-1, 1),  _GROUP_HDR),
+        # Extraconcursal data rows – alternating warm tint
+        ("ROWBACKGROUNDS", (0, extra_start), (-1, extra_start + extra_count - 1),
+         [_EXTRA_BG, colors.HexColor("#FFF1DC")]),
+        # Concursal sub-header
+        ("BACKGROUND",     (0, conc_hdr), (-1, conc_hdr), _GROUP_HDR),
+        # Concursal data rows – alternating cool tint
+        ("ROWBACKGROUNDS", (0, conc_start), (-1, conc_start + conc_count - 1),
+         [_CONC_BG, colors.HexColor("#E2ECFF")]),
+        # Total row
+        ("BACKGROUND",     (0, total_row), (-1, total_row), _NAVY_LIGHT),
+        ("TEXTCOLOR",      (0, total_row), (-1, total_row), _WHITE),
+    ]
+    tbl.setStyle(TableStyle(cmds))
+    story.append(tbl)
+
+    # Footnote
+    story.append(Spacer(1, 0.15 * cm))
+    story.append(_para(
+        f"Base salarial: SM = R$ 1.518,00 · Limite trabalhista: 150 × R$ 1.518,00 = {_brl(150 * 1518.0)}  "
+        f"(Art. 83, I, Lei 11.101/2005)",
+        font=_SANS, size=7.5, color=_GRAY_DARK, align=TA_LEFT,
+    ))
+    story.append(Spacer(1, 0.3 * cm))
+    return story
+
+
 def _build_summary_table(
     calc: CalculationReport,
     esaj: Dict[str, ESAJProcessInfo],
 ) -> List:
-    story = _section_title("1. Quadro Resumo das Execuções Fiscais")
+    story = _section_title("2. Quadro Resumo das Execuções Fiscais")
 
     col_w = [5.0 * cm, 2.4 * cm, 2.4 * cm, 3.2 * cm, 3.8 * cm]
     header = [
@@ -334,7 +455,7 @@ def _build_summary_table(
 
 
 def _build_intro(calc: CalculationReport, esaj: Dict[str, ESAJProcessInfo]) -> List:
-    story = _section_title("Introdução")
+    story = _section_title("Introdução e Síntese")
 
     n_exec = len(calc.unique_executions)
     n_susp = sum(1 for v in esaj.values() if v.is_suspended)
@@ -710,20 +831,22 @@ def generate_report(
     # Cover (renders via onFirstPage; story starts on page 2)
     story.append(PageBreak())
 
-    # 1. Introduction
+    # 1. Credit classification (Lei 11.101/2005 Art. 83/84)
+    classification = classify_credits(calc)
+    story += _build_credit_classification(classification)
+
+    # 2. Introduction + legal framework
     story += _build_intro(calc, esaj_results)
     story.append(Spacer(1, 0.2 * cm))
-
-    # 2. Legal framework
     story += _build_legal_framework()
     story.append(Spacer(1, 0.2 * cm))
 
-    # 3. Summary table
+    # 3. Execution summary table
     story += _build_summary_table(calc, esaj_results)
     story.append(PageBreak())
 
     # 4. Detail per process
-    story += _section_title("2. Análise Individual das Execuções Fiscais")
+    story += _section_title("3. Análise Individual das Execuções Fiscais")
     by_exec = calc.cdas_by_execution
 
     for seq, exec_num in enumerate(calc.unique_executions, start=1):

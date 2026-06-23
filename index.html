@@ -554,6 +554,11 @@
     .pr-signature { margin-top: 2cm; text-align: center; }
     .pr-sig-line { border-top: 1pt solid #1B2A4A; width: 8cm; margin: 0 auto 6pt; padding-top: 6pt; }
     .pr-footer { position: fixed; bottom: 1cm; left: 2.5cm; right: 2.5cm; border-top: 0.5pt solid #999; padding-top: 4pt; font-size: 7pt; color: #666; display: flex; justify-content: space-between; }
+    .pr-classif-table { width: 100%; border-collapse: collapse; margin-bottom: 0.3cm; font-size: 9pt; }
+    .pr-classif-table th { background: #1B2A4A !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; color: white; padding: 5pt 8pt; font-size: 8.5pt; }
+    .pr-classif-table td { padding: 4pt 8pt; border: 0.5pt solid #ddd; }
+    .pr-group-hdr td { background: #344B6E !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; color: white; font-weight: bold; font-size: 8.5pt; padding: 5pt 8pt; }
+    .pr-total-row td { background: #2C4070 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; color: white; font-weight: bold; font-size: 10pt; padding: 5pt 8pt; }
     @page { size: A4; margin: 0; }
   }
 </style>
@@ -1309,6 +1314,17 @@ function loadPanazzoloDemoData() {
       ]
     },
   ];
+  pesqData.classificacao = {
+    extra_restituicao:      0.00,
+    extra_trabalhista:      31.41,
+    extra_taxa_judiciaria:  314.05,
+    extra_fatos_posteriores:0.00,
+    conc_trabalhista:       227700.00,
+    conc_tributario:        9033506.49,
+    conc_quirografario:     1599765.56,
+    conc_subquirografario:  9241149.10,
+    total:                  20102466.61,
+  };
   savePesqData(); renderPesquisa();
   toast('Dados da Panazzolo carregados!', '✅');
 }
@@ -1331,6 +1347,43 @@ function openPrintReport() {
     const lbl = {suspenso:'SUSPENSO',extinto:'EXTINTO/ARQUIVADO',ativo:'ATIVO',nc:'NÃO CONSULTADO'};
     return `<span class="pr-badge ${map[s]||'pr-badge-nc'}">${lbl[s]||'NÃO CONSULTADO'}</span>`;
   }
+
+  function brl(v) {
+    return 'R$ ' + Number(v).toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
+  }
+
+  // Credit classification table
+  const cl = pesqData.classificacao;
+  const classifHtml = cl ? `
+    <div class="pr-section-title">1. Classificação do Crédito Público – Lei 11.101/2005</div>
+    <p class="pr-para">
+      A tabela abaixo apresenta a classificação dos créditos fiscais constantes da planilha de cálculo,
+      segregados entre <strong>créditos extraconcursais</strong> (fatos geradores posteriores ao decreto de
+      falência – Art. 84 da Lei 11.101/2005) e <strong>créditos concursais</strong> (fatos geradores
+      anteriores à falência – Art. 83), com as respectivas subclasses e valores atualizados.
+    </p>
+    <table class="pr-classif-table">
+      <thead><tr>
+        <th style="text-align:left">CLASSE / NATUREZA DO CRÉDITO</th>
+        <th style="text-align:right;width:4.5cm">VALOR (R$)</th>
+      </tr></thead>
+      <tbody>
+        <tr class="pr-group-hdr"><td colspan="2">EXTRACONCURSAL – Art. 84 &nbsp;(créditos posteriores à decretação da falência)</td></tr>
+        <tr><td>&nbsp;&nbsp;&nbsp;Restituição</td><td style="text-align:right">${brl(cl.extra_restituicao)}</td></tr>
+        <tr><td>&nbsp;&nbsp;&nbsp;Trabalhista</td><td style="text-align:right">${brl(cl.extra_trabalhista)}</td></tr>
+        <tr><td>&nbsp;&nbsp;&nbsp;Taxa Judiciária</td><td style="text-align:right">${brl(cl.extra_taxa_judiciaria)}</td></tr>
+        <tr><td>&nbsp;&nbsp;&nbsp;Fatos Geradores Posteriores à Quebra</td><td style="text-align:right">${brl(cl.extra_fatos_posteriores)}</td></tr>
+        <tr class="pr-group-hdr"><td colspan="2">CONCURSAL – Art. 83 &nbsp;(créditos anteriores à decretação da falência)</td></tr>
+        <tr><td>&nbsp;&nbsp;&nbsp;Trabalhista – Art. 83, I &nbsp;(até 150 SM)</td><td style="text-align:right">${brl(cl.conc_trabalhista)}</td></tr>
+        <tr><td>&nbsp;&nbsp;&nbsp;Tributário – Art. 83, III</td><td style="text-align:right">${brl(cl.conc_tributario)}</td></tr>
+        <tr><td>&nbsp;&nbsp;&nbsp;Quirografário – Art. 83, VI</td><td style="text-align:right">${brl(cl.conc_quirografario)}</td></tr>
+        <tr><td>&nbsp;&nbsp;&nbsp;Subquirografário – Art. 83, VIII</td><td style="text-align:right">${brl(cl.conc_subquirografario)}</td></tr>
+        <tr class="pr-total-row"><td>TOTAL GERAL</td><td style="text-align:right">${brl(cl.total)}</td></tr>
+      </tbody>
+    </table>
+    <p class="pr-para" style="font-size:7.5pt;color:#5D6D7E">
+      Base salarial: SM = R$ 1.518,00 &nbsp;·&nbsp; Limite trabalhista: 150 × R$ 1.518,00 = R$ 227.700,00 (Art. 83, I, Lei 11.101/2005)
+    </p>` : '';
 
   // Summary table rows
   const sumRows = pesqData.execucoes.map(e => {
@@ -1405,7 +1458,9 @@ function openPrintReport() {
       da Falência de ${ci.company||'___________'}
     </div>
 
-    <div class="pr-section-title">Introdução</div>
+    ${classifHtml}
+
+    <div class="pr-section-title">Introdução e Síntese</div>
     <p class="pr-para">
       O presente relatório apresenta ao Administrador Judicial o status atualizado das execuções
       fiscais identificadas na planilha de cálculo do crédito fiscal. Foram analisadas
@@ -1423,7 +1478,7 @@ function openPrintReport() {
       o crédito na falência; ou (ii) prosseguir com a execução.
     </p>
 
-    <div class="pr-section-title">1. Quadro Resumo das Execuções Fiscais</div>
+    <div class="pr-section-title">2. Quadro Resumo das Execuções Fiscais</div>
     <table class="pr-table">
       <thead><tr>
         <th>Nº Execução Fiscal</th><th>Tipo</th><th>CDAs</th>
@@ -1434,7 +1489,7 @@ function openPrintReport() {
   </div>
 
   <div class="pr-page">
-    <div class="pr-section-title">2. Análise Individual das Execuções Fiscais</div>
+    <div class="pr-section-title">3. Análise Individual das Execuções Fiscais</div>
     ${details}
 
     <div class="pr-section-title" style="margin-top:1cm">Conclusão e Recomendações</div>
